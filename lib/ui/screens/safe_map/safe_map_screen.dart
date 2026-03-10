@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../core/services/api_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../models/route_info.dart';
 import '../../../providers/map_provider.dart';
@@ -103,7 +106,7 @@ class _SafeMapScreenState extends ConsumerState<SafeMapScreen> {
         children: [
           _buildMapArea(context, mapState),
           _buildSearchOverlay(context, mapState, notifier),
-          _buildFloatingActions(context, notifier),
+          _buildFloatingActions(context, mapState, notifier),
           if (mapState.error != null)
             _buildInlineMessage(context, mapState.error!),
           if (mapState.activeRoute != null)
@@ -134,6 +137,9 @@ class _SafeMapScreenState extends ConsumerState<SafeMapScreen> {
         state.routePoints.map((p) => LatLng(p.lat, p.lng)).toList();
 
     final routeColor = _routeColor(state.activeRiskLevel);
+    final routePolygon = routePoints.length >= 2
+        ? _buildRouteZonePolygon(routePoints, zoneWidthMeters: 65)
+        : const <LatLng>[];
     final hazardCircles = state.nearbyHazards
         .map(
           (hazard) => CircleMarker(
@@ -223,6 +229,17 @@ class _SafeMapScreenState extends ConsumerState<SafeMapScreen> {
           urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.suraksha.ai',
         ),
+        if (routePolygon.length >= 3)
+          PolygonLayer(
+            polygons: [
+              Polygon(
+                points: routePolygon,
+                color: routeColor.withValues(alpha: 0.2),
+                borderColor: routeColor.withValues(alpha: 0.7),
+                borderStrokeWidth: 2,
+              ),
+            ],
+          ),
         if (hazardCircles.isNotEmpty) CircleLayer(circles: hazardCircles),
         if (routePoints.length >= 2)
           PolylineLayer(
@@ -401,7 +418,11 @@ class _SafeMapScreenState extends ConsumerState<SafeMapScreen> {
     );
   }
 
-  Widget _buildFloatingActions(BuildContext context, MapNotifier notifier) {
+  Widget _buildFloatingActions(
+    BuildContext context,
+    MapState state,
+    MapNotifier notifier,
+  ) {
     return Positioned(
       right: 16,
       bottom: 320,
@@ -420,7 +441,38 @@ class _SafeMapScreenState extends ConsumerState<SafeMapScreen> {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
-                onTap: () => notifier.dropHazardPin(),
+                onTap: () async {
+                  if (!ApiService.isAuthenticated) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please login to drop a hazard pin'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  final point = _resolveHazardDropPoint(state);
+                  await notifier.dropHazardPin(
+                    latitude: point.latitude,
+                    longitude: point.longitude,
+                    hazardType: 'suspicious_activity',
+                    description: 'Reported from safe map',
+                  );
+                  if (!context.mounted) return;
+                  final hasError = ref.read(mapProvider).error != null;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        hasError
+                            ? 'Failed to drop hazard pin'
+                            : 'Hazard pin dropped successfully',
+                      ),
+                      backgroundColor:
+                          hasError ? AppColors.crimson : AppColors.emerald,
+                    ),
+                  );
+                },
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
@@ -744,5 +796,73 @@ class _SafeMapScreenState extends ConsumerState<SafeMapScreen> {
       default:
         return AppColors.amber;
     }
+  }
+
+  LatLng _resolveHazardDropPoint(MapState state) {
+    if (state.routePoints.isNotEmpty) {
+      final midpoint = state.routePoints[state.routePoints.length ~/ 2];
+      return LatLng(midpoint.lat, midpoint.lng);
+    }
+
+    try {
+      return _mapController.camera.center;
+    } catch (_) {
+      return const LatLng(21.1065, 79.0590);
+    }
+  }
+
+  List<LatLng> _buildRouteZonePolygon(
+    List<LatLng> pathPoints, {
+    required double zoneWidthMeters,
+  }) {
+    if (pathPoints.length < 2) return const <LatLng>[];
+
+    final leftEdge = <LatLng>[];
+    final rightEdge = <LatLng>[];
+
+    for (var i = 0; i < pathPoints.length; i++) {
+      final current = pathPoints[i];
+      final prev = i == 0 ? current : pathPoints[i - 1];
+      final next = i == pathPoints.length - 1 ? current : pathPoints[i + 1];
+
+      var deltaLat = next.latitude - prev.latitude;
+      var deltaLng = next.longitude - prev.longitude;
+      if (deltaLat.abs() < 0.0000001 && deltaLng.abs() < 0.0000001) {
+        deltaLat = 0.0000001;
+      }
+
+      final length = math.sqrt(deltaLat * deltaLat + deltaLng * deltaLng);
+      final normalLat = deltaLng / length;
+      final normalLng = -deltaLat / length;
+
+      final latOffset = _metersToLatitudeDegrees(zoneWidthMeters) * normalLat;
+      final lngOffset = _metersToLongitudeDegrees(
+            zoneWidthMeters,
+            current.latitude,
+          ) *
+          normalLng;
+
+      leftEdge.add(
+        LatLng(current.latitude + latOffset, current.longitude + lngOffset),
+      );
+      rightEdge.add(
+        LatLng(current.latitude - latOffset, current.longitude - lngOffset),
+      );
+    }
+
+    final polygon = <LatLng>[
+      ...leftEdge,
+      ...rightEdge.reversed,
+    ];
+
+    return polygon.length >= 3 ? polygon : const <LatLng>[];
+  }
+
+  double _metersToLatitudeDegrees(double meters) => meters / 111320.0;
+
+  double _metersToLongitudeDegrees(double meters, double latitude) {
+    final cosLat = math.cos(latitude * math.pi / 180).abs();
+    final safeCos = cosLat < 0.01 ? 0.01 : cosLat;
+    return meters / (111320.0 * safeCos);
   }
 }

@@ -13,6 +13,12 @@ class ApiService {
     if (_baseUrlFromEnv.isNotEmpty) return _baseUrlFromEnv;
     if (kIsWeb) {
       final webUri = Uri.base;
+      final isHttp = webUri.scheme == 'http' || webUri.scheme == 'https';
+      if (isHttp) {
+        // Prefer same-origin API routing on web to avoid CORS/LAN port issues.
+        return '${webUri.origin}/api/v1';
+      }
+
       final host = webUri.host.isNotEmpty ? webUri.host : 'localhost';
       final scheme = webUri.scheme == 'https' ? 'https' : 'http';
       return '$scheme://$host:8000/api/v1';
