@@ -36,13 +36,22 @@ class RequestOTPView(APIView):
         phone = serializer.validated_data["phone_number"]
 
         code = f"{random.randint(100000, 999999)}"
-        OTP.objects.create(
+        otp = OTP.objects.create(
             phone_number=phone,
             code=code,
             expires_at=timezone.now() + timedelta(minutes=5),
         )
 
-        send_sms(phone, f"Your Suraksha AI verification code is: {code}")
+        sent = send_sms(phone, f"Your Suraksha AI verification code is: {code}")
+        if not sent:
+            # Avoid keeping OTPs that were never delivered.
+            otp.delete()
+            logger.error(f"OTP delivery failed for {phone}")
+            return Response(
+                {"error": "Failed to send OTP. Please retry."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
         logger.info(f"OTP sent to {phone}")
 
         return Response(

@@ -1,7 +1,9 @@
 """URL configuration for Suraksha AI backend."""
 from django.contrib import admin
 from django.urls import path, include
+from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from core_api import views as core_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -14,6 +16,7 @@ urlpatterns = [
     path("api/v1/routes/", include("apps.routing.urls")),
     path("api/v1/privacy/", include("apps.privacy.urls")),
     path("api/v1/dashboard/", include("apps.dashboard.urls")),
+    path("api/sos/", csrf_exempt(core_views.send_sos_alert), name="sos-alert"),
 
     # API docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

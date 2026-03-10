@@ -1,148 +1,404 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Safe Route Navigator</title>
 
-<html class="dark" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "primary": "#ec5b13",
-              "background-light": "#f8f6f6",
-              "background-dark": "#221610",
-              "safe-green": "#10b981",
-              "caution-amber": "#f59e0b",
-            },
-            fontFamily: {
-              "display": ["Public Sans"]
-            },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
-          },
-        },
-      }
-    </script>
-<style>body {
-    font-family: "Public Sans", sans-serif
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    :root {
+      --bg: #0f1414;
+      --panel: #171d1d;
+      --muted: #8ca0a0;
+      --text: #eef4f4;
+      --accent: #f97316;
+      --safe: #10b981;
+      --warn: #f59e0b;
+      --danger: #ef4444;
     }
-.map-bg {
-    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCm9vJ8fBaIfYooSWTzSLh3ksyp1g_0M7_K44vLei42Ry2uIvCgLZDYwir5AKO6DxOiw7H7P50XieY44CQk2_e0ttRmI4_FC1VRvNJkcS3836OwrxwNOyS4adgatdElBISS5uZtUifZ-8Ke6MLiuckzPhGUjwIb6RAtp6EtnFD596XDsOPRr-5UXZdMHfufUCdirEXahQtLLM0QB2y5u-w8e-I0wbCf3MW-mj_I7d5eY7VSmzjoL1Z8AmwTFJhG5fOHpXrZ5DTODsrY);
-    background-size: cover;
-    background-position: center
-    }
-.custom-shadow {
-    box-shadow: 0 -4px 20px -5px rgba(0, 0, 0, 0.5)
-    }</style>
-<style>
+
+    * { box-sizing: border-box; }
+
     body {
-      min-height: max(884px, 100dvh);
+      margin: 0;
+      font-family: "Public Sans", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 10% 10%, #1f2a2a 0, var(--bg) 40%);
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      padding: 14px;
+      border-bottom: 1px solid #243131;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr auto;
+      align-items: end;
+      background: rgba(14, 18, 18, 0.86);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.2px;
+    }
+
+    .field select {
+      border: 1px solid #2a3a3a;
+      background: #101717;
+      color: var(--text);
+      border-radius: 10px;
+      height: 42px;
+      padding: 0 12px;
+      outline: none;
+    }
+
+    .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+    }
+
+    .search-btn {
+      height: 42px;
+      border: 0;
+      border-radius: 10px;
+      color: #fff;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), #f43f5e);
+      cursor: pointer;
+      padding: 0 16px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      min-height: 0;
+    }
+
+    #map {
+      width: 100%;
+      height: calc(100dvh - 79px);
+    }
+
+    .panel {
+      border-left: 1px solid #243131;
+      background: var(--panel);
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .panel p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .info {
+      margin-top: 16px;
+      border: 1px solid #273636;
+      border-radius: 12px;
+      padding: 14px;
+      background: #111818;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .legend {
+      margin-top: 16px;
+      border: 1px solid #273636;
+      border-radius: 12px;
+      padding: 14px;
+      background: #111818;
+      font-size: 13px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @media (max-width: 980px) {
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+      }
+
+      #map {
+        height: 62dvh;
+      }
+
+      .panel {
+        border-left: 0;
+        border-top: 1px solid #243131;
+      }
     }
   </style>
-  </head>
-<body class="bg-background-light dark:bg-background-dark font-display overflow-hidden h-screen w-full">
-<!-- Main Map Container -->
-<div class="relative h-full w-full map-bg" data-alt="Dark themed street map with emerald green and amber route lines" data-location="San Francisco Downtown" style="">
-<!-- SVG Route Overlay (Simulated) -->
-<svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-<!-- Safe Route (Emerald Green) -->
-<path d="M100 200 L150 250 L150 400 L250 450" fill="none" stroke="#10b981" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"></path>
-<!-- Cautious Route (Amber) -->
-<path d="M100 200 L50 300 L80 450 L250 450" fill="none" stroke="#f59e0b" stroke-dasharray="8 4" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
-<!-- Markers -->
-<circle cx="100" cy="200" fill="#ec5b13" r="8"></circle>
-<circle cx="250" cy="450" fill="#10b981" r="8" stroke="white" stroke-width="2"></circle>
-</svg>
-<!-- Top Search Interface -->
-<div class="absolute top-0 left-0 w-full p-4 pt-12 bg-gradient-to-b from-background-dark/80 to-transparent">
-<div class="max-w-md mx-auto space-y-2">
-<div class="relative group">
-<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-<span class="material-symbols-outlined text-primary text-sm">my_location</span>
-</div>
-<input class="w-full bg-background-dark/90 border-none rounded-xl py-3 pl-10 pr-4 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-primary shadow-lg" placeholder="Current Location" type="text" value="123 Harmony St."/>
-</div>
-<div class="relative group">
-<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-<span class="material-symbols-outlined text-safe-green text-sm">location_on</span>
-</div>
-<input class="w-full bg-background-dark/90 border-none rounded-xl py-3 pl-10 pr-4 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-primary shadow-lg" placeholder="Where to?" type="text" value="Central Park West"/>
-</div>
-</div>
-</div>
-<!-- Floating Action Buttons -->
-<div class="absolute right-4 bottom-72 flex flex-col gap-3">
-<button class="w-14 h-14 bg-background-dark/90 text-slate-100 rounded-full flex items-center justify-center shadow-xl border border-slate-700/50">
-<span class="material-symbols-outlined">layers</span>
-</button>
-<button class="w-14 h-14 bg-background-dark/90 text-slate-100 rounded-full flex items-center justify-center shadow-xl border border-slate-700/50">
-<span class="material-symbols-outlined">navigation</span>
-</button>
-<button class="group flex items-center gap-2 bg-primary text-white px-4 py-3 rounded-full shadow-2xl hover:bg-primary/90 transition-all">
-<span class="material-symbols-outlined">report_problem</span>
-<span class="font-bold text-sm">Drop Hazard Pin</span>
-</button>
-</div>
-<!-- Floating Bottom Sheet (Route Safety Card) -->
-<div class="absolute bottom-0 left-0 w-full bg-background-dark rounded-t-[2rem] p-6 custom-shadow border-t border-slate-800">
-<div class="w-12 h-1.5 bg-slate-700 rounded-full mx-auto mb-6"></div>
-<div class="flex items-start justify-between mb-6">
-<div>
-<h2 class="text-xl font-bold text-slate-100">Safe Route Found</h2>
-<p class="text-slate-400 text-sm">Via 5th Avenue • 12 min walk</p>
-</div>
-<div class="bg-safe-green/20 border border-safe-green/30 px-3 py-2 rounded-xl text-center">
-<div class="text-xs text-safe-green font-bold uppercase tracking-wider">Danger Score</div>
-<div class="text-xl font-black text-safe-green leading-none">12<span class="text-xs font-normal">/100</span></div>
-<div class="text-[10px] text-safe-green font-medium">Safe</div>
-</div>
-</div>
-<div class="grid grid-cols-2 gap-4 mb-8">
-<div class="bg-slate-800/50 p-4 rounded-2xl flex items-center gap-3">
-<div class="w-10 h-10 bg-safe-green/10 rounded-full flex items-center justify-center text-safe-green">
-<span class="material-symbols-outlined">lightbulb</span>
-</div>
-<div>
-<div class="text-slate-100 text-sm font-semibold">Good Lighting</div>
-<div class="text-slate-500 text-[10px]">95% coverage</div>
-</div>
-</div>
-<div class="bg-slate-800/50 p-4 rounded-2xl flex items-center gap-3">
-<div class="w-10 h-10 bg-caution-amber/10 rounded-full flex items-center justify-center text-caution-amber">
-<span class="material-symbols-outlined">release_alert</span>
-</div>
-<div>
-<div class="text-slate-100 text-sm font-semibold">2 Recent Incidents</div>
-<div class="text-slate-500 text-[10px]">Last 24 hours</div>
-</div>
-</div>
-</div>
-<button class="w-full bg-primary text-white py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-primary/20 transition-all">
-                Start Navigation
-            </button>
-</div>
-<!-- Bottom Nav Bar Component Overlay (Fixed Bottom) -->
-<div class="fixed bottom-0 left-0 w-full bg-background-dark border-t border-slate-800 px-6 py-3 flex justify-between items-center z-50">
-<a class="flex flex-col items-center gap-1 text-primary" href="#">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">explore</span>
-<span class="text-[10px] font-medium">Explore</span>
-</a>
-<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
-<span class="material-symbols-outlined">shield_with_heart</span>
-<span class="text-[10px] font-medium">Safety</span>
-</a>
-<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
-<span class="material-symbols-outlined">warning</span>
-<span class="text-[10px] font-medium">Reports</span>
-</a>
-<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
-<span class="material-symbols-outlined">person</span>
-<span class="text-[10px] font-medium">Profile</span>
-</a>
-</div>
-</div>
-</body></html>
+</head>
+<body>
+  <header class="topbar">
+    <div class="field">
+      <label for="startLocation">Start Location</label>
+      <select id="startLocation"></select>
+    </div>
+
+    <div class="field">
+      <label for="endLocation">End Location</label>
+      <select id="endLocation"></select>
+    </div>
+
+    <button id="routeSearchBtn" class="search-btn">Find Safe Route</button>
+  </header>
+
+  <main class="layout">
+    <div id="map"></div>
+
+    <aside class="panel">
+      <h2>Route Intelligence</h2>
+      <p>Dataset-only routing. No external directions APIs used.</p>
+
+      <div id="routeInfo" class="info">
+        Select start and end locations, then click <strong>Find Safe Route</strong>.
+      </div>
+
+      <div class="legend">
+        <div><strong>Route Risk</strong></div>
+        <div><span class="dot" style="background:#10b981"></span>LOW</div>
+        <div><span class="dot" style="background:#f59e0b"></span>MEDIUM</div>
+        <div><span class="dot" style="background:#ef4444"></span>HIGH</div>
+        <br />
+        <div><strong>Hazard Severity</strong></div>
+        <div><span class="dot" style="background:#ef4444"></span>HIGH</div>
+        <div><span class="dot" style="background:#f59e0b"></span>MEDIUM</div>
+        <div><span class="dot" style="background:#facc15"></span>LOW</div>
+      </div>
+    </aside>
+  </main>
+
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    const safeRouteDataset = {
+      "locations": [
+        {"name":"GCOEN Khapri","lat":21.0908,"lng":79.0472,"safety":"HIGH"},
+        {"name":"Khapri Station","lat":21.0921,"lng":79.0551,"safety":"MEDIUM"},
+        {"name":"AIIMS Nagpur","lat":21.0942,"lng":79.0605,"safety":"HIGH"},
+        {"name":"MIHAN SEZ","lat":21.0935,"lng":79.0623,"safety":"HIGH"},
+        {"name":"Nagpur Airport","lat":21.0920,"lng":79.0472,"safety":"HIGH"},
+        {"name":"Wardha Road","lat":21.1001,"lng":79.0450,"safety":"MEDIUM"},
+        {"name":"Somalwada","lat":21.0960,"lng":79.0530,"safety":"MEDIUM"},
+        {"name":"Narendra Nagar","lat":21.1065,"lng":79.0590,"safety":"HIGH"},
+        {"name":"Pratap Nagar","lat":21.1080,"lng":79.0670,"safety":"HIGH"},
+        {"name":"Trimurti Nagar","lat":21.1160,"lng":79.0610,"safety":"HIGH"},
+        {"name":"Jaiprakash Nagar","lat":21.1010,"lng":79.0670,"safety":"HIGH"},
+        {"name":"Futala Lake","lat":21.1370,"lng":79.0720,"safety":"HIGH"},
+        {"name":"Sitabuldi","lat":21.1450,"lng":79.0850,"safety":"MEDIUM"}
+      ],
+      "routes":[
+        {"id":1,"start":"GCOEN Khapri","end":"AIIMS Nagpur","distance_km":2.4,"risk_level":"LOW","route":[{"lat":21.0908,"lng":79.0472},{"lat":21.0920,"lng":79.0520},{"lat":21.0930,"lng":79.0560},{"lat":21.0942,"lng":79.0605}]},
+        {"id":2,"start":"GCOEN Khapri","end":"Khapri Station","distance_km":1.8,"risk_level":"MEDIUM","route":[{"lat":21.0908,"lng":79.0472},{"lat":21.0912,"lng":79.0500},{"lat":21.0917,"lng":79.0525},{"lat":21.0921,"lng":79.0551}]},
+        {"id":3,"start":"AIIMS Nagpur","end":"Somalwada","distance_km":2.8,"risk_level":"MEDIUM","route":[{"lat":21.0942,"lng":79.0605},{"lat":21.0950,"lng":79.0580},{"lat":21.0955,"lng":79.0555},{"lat":21.0960,"lng":79.0530}]},
+        {"id":4,"start":"Somalwada","end":"Narendra Nagar","distance_km":2.5,"risk_level":"LOW","route":[{"lat":21.0960,"lng":79.0530},{"lat":21.0990,"lng":79.0555},{"lat":21.1030,"lng":79.0575},{"lat":21.1065,"lng":79.0590}]},
+        {"id":5,"start":"Narendra Nagar","end":"Pratap Nagar","distance_km":1.5,"risk_level":"LOW","route":[{"lat":21.1065,"lng":79.0590},{"lat":21.1070,"lng":79.0620},{"lat":21.1075,"lng":79.0645},{"lat":21.1080,"lng":79.0670}]},
+        {"id":6,"start":"Pratap Nagar","end":"Trimurti Nagar","distance_km":1.6,"risk_level":"LOW","route":[{"lat":21.1080,"lng":79.0670},{"lat":21.1105,"lng":79.0650},{"lat":21.1130,"lng":79.0630},{"lat":21.1160,"lng":79.0610}]},
+        {"id":7,"start":"Trimurti Nagar","end":"Sitabuldi","distance_km":3.5,"risk_level":"MEDIUM","route":[{"lat":21.1160,"lng":79.0610},{"lat":21.1230,"lng":79.0660},{"lat":21.1340,"lng":79.0740},{"lat":21.1450,"lng":79.0850}]}
+      ],
+      "hazards":[
+        {"id":1,"lat":21.0980,"lng":79.0550,"severity":"HIGH","description":"Poor lighting and isolated area"},
+        {"id":2,"lat":21.1030,"lng":79.0580,"severity":"MEDIUM","description":"Reported theft incidents"},
+        {"id":3,"lat":21.1120,"lng":79.0610,"severity":"HIGH","description":"Unsafe industrial road"},
+        {"id":4,"lat":21.1300,"lng":79.0720,"severity":"MEDIUM","description":"Crowded traffic area"}
+      ]
+    };
+
+    const routeColors = { LOW: "green", MEDIUM: "orange", HIGH: "red" };
+    const hazardColors = { HIGH: "red", MEDIUM: "orange", LOW: "yellow" };
+
+    const routeState = {
+      data: null,
+      routeLayer: null,
+      hazardLayer: L.layerGroup(),
+      startMarker: null,
+      endMarker: null
+    };
+
+    let map = window.map;
+    if (!map) {
+      map = L.map("map").setView([21.1065, 79.0590], 13);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+      window.map = map;
+    }
+
+    routeState.hazardLayer.addTo(map);
+
+    const startEl = document.getElementById("startLocation");
+    const endEl = document.getElementById("endLocation");
+    const searchEl = document.getElementById("routeSearchBtn");
+    const infoEl = document.getElementById("routeInfo");
+
+    function loadDataset() {
+      routeState.data = safeRouteDataset;
+
+      const options = routeState.data.locations
+        .map((loc) => `<option value="${loc.name}">${loc.name}</option>`)
+        .join("");
+
+      startEl.innerHTML = `<option value="">Select start location</option>${options}`;
+      endEl.innerHTML = `<option value="">Select end location</option>${options}`;
+
+      return routeState.data;
+    }
+
+    function findRoute(start, end) {
+      if (!routeState.data) return null;
+      return routeState.data.routes.find((r) => r.start === start && r.end === end) || null;
+    }
+
+    function drawRoute(route) {
+      if (routeState.routeLayer) map.removeLayer(routeState.routeLayer);
+      if (routeState.startMarker) map.removeLayer(routeState.startMarker);
+      if (routeState.endMarker) map.removeLayer(routeState.endMarker);
+
+      if (!route) return;
+
+      const latLngs = route.route.map((p) => [p.lat, p.lng]);
+      routeState.routeLayer = L.polyline(latLngs, {
+        color: routeColors[route.risk_level] || "gray",
+        weight: 6,
+        opacity: 0.9
+      }).addTo(map);
+
+      routeState.startMarker = L.marker(latLngs[0]).addTo(map).bindPopup(`Start: ${route.start}`);
+      routeState.endMarker = L.marker(latLngs[latLngs.length - 1]).addTo(map).bindPopup(`End: ${route.end}`);
+
+      map.fitBounds(routeState.routeLayer.getBounds(), { padding: [24, 24] });
+    }
+
+    function haversineDistanceKm(a, b) {
+      const toRad = (d) => (d * Math.PI) / 180;
+      const R = 6371;
+      const dLat = toRad(b.lat - a.lat);
+      const dLng = toRad(b.lng - a.lng);
+      const lat1 = toRad(a.lat);
+      const lat2 = toRad(b.lat);
+
+      const x =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+      return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    }
+
+    function drawHazards(route) {
+      routeState.hazardLayer.clearLayers();
+      if (!route) return [];
+
+      const nearHazards = routeState.data.hazards.filter((hazard) => {
+        return route.route.some((point) => haversineDistanceKm(hazard, point) <= 0.35);
+      });
+
+      nearHazards.forEach((hazard) => {
+        const color = hazardColors[hazard.severity] || "yellow";
+        L.circle([hazard.lat, hazard.lng], {
+          radius: 200,
+          color,
+          fillColor: color,
+          fillOpacity: 0.28,
+          weight: 2
+        })
+          .bindPopup(`<strong>${hazard.severity} Hazard</strong><br>${hazard.description}`)
+          .addTo(routeState.hazardLayer);
+      });
+
+      return nearHazards;
+    }
+
+    function displayRouteInfo(route, hazards = []) {
+      if (!route) {
+        infoEl.innerHTML = "No route available for the selected locations.";
+        return;
+      }
+
+      const warning = hazards.length > 0
+        ? "⚠ Danger zone detected along this route."
+        : "✅ No hazard zones detected along this route.";
+
+      infoEl.innerHTML = `
+        <div><strong>Start:</strong> ${route.start}</div>
+        <div><strong>End:</strong> ${route.end}</div>
+        <div><strong>Distance:</strong> ${route.distance_km} km</div>
+        <div><strong>Risk Level:</strong> ${route.risk_level}</div>
+        <div><strong>Nearby Hazards:</strong> ${hazards.length}</div>
+        <div style="margin-top:8px">${warning}</div>
+      `;
+    }
+
+    function handleRouteSearch() {
+      const start = startEl.value;
+      const end = endEl.value;
+
+      if (!start || !end) {
+        displayRouteInfo(null);
+        return;
+      }
+
+      const route = findRoute(start, end);
+
+      if (!route) {
+        drawRoute(null);
+        drawHazards(null);
+        displayRouteInfo(null);
+        return;
+      }
+
+      drawRoute(route);
+      const nearHazards = drawHazards(route);
+      displayRouteInfo(route, nearHazards);
+    }
+
+    loadDataset();
+    searchEl.addEventListener("click", handleRouteSearch);
+  </script>
+</body>
+</html>

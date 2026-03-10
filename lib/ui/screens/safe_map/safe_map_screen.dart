@@ -1,35 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
+
 import '../../../core/theme/app_colors.dart';
-import '../../../providers/map_provider.dart';
 import '../../../models/route_info.dart';
+import '../../../providers/map_provider.dart';
 import '../../widgets/common/offline_banner.dart';
 
-class SafeMapScreen extends ConsumerWidget {
+class SafeMapScreen extends ConsumerStatefulWidget {
   const SafeMapScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SafeMapScreen> createState() => _SafeMapScreenState();
+}
+
+class _SafeMapScreenState extends ConsumerState<SafeMapScreen> {
+  final MapController _mapController = MapController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    ref.listenManual<MapState>(mapProvider, (previous, next) {
+      final pointsChanged = previous?.routePoints != next.routePoints;
+      if (pointsChanged && next.routePoints.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _fitToRoute(next.routePoints);
+        });
+      }
+    });
+  }
+
+  void _fitToRoute(List<SafeRoutePoint> routePoints) {
+    final points = routePoints.map((p) => LatLng(p.lat, p.lng)).toList();
+    if (points.length < 2) return;
+
+    final bounds = LatLngBounds.fromPoints(points);
+    _mapController.fitCamera(
+      CameraFit.bounds(
+        bounds: bounds,
+        padding: const EdgeInsets.all(64),
+      ),
+    );
+  }
+
+  void _showHazardDetails(SafeRouteHazard hazard) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: AppColors.slate900,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 42,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.slate700,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                '${hazard.severity} Hazard',
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                hazard.description,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final mapState = ref.watch(mapProvider);
     final notifier = ref.read(mapProvider.notifier);
 
     return Scaffold(
       body: Stack(
         children: [
-          // Map placeholder with offline fallback
           _buildMapArea(context, mapState),
-
-          // Search overlay at top
           _buildSearchOverlay(context, mapState, notifier),
-
-          // Floating action buttons
           _buildFloatingActions(context, notifier),
-
-          // Bottom sheet with route info
+          if (mapState.error != null)
+            _buildInlineMessage(context, mapState.error!),
           if (mapState.activeRoute != null)
-            _buildRouteSheet(context, mapState.activeRoute!, notifier),
-
-          // Offline banner
+            _buildRouteSheet(
+              context,
+              mapState.activeRoute!,
+              mapState.nearbyHazards.length,
+              notifier,
+            ),
           if (!mapState.isOfflineMapAvailable)
             const Positioned(
               top: 0,
@@ -47,25 +130,125 @@ class SafeMapScreen extends ConsumerWidget {
   }
 
   Widget _buildMapArea(BuildContext context, MapState state) {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        color: AppColors.backgroundDark,
-        image: const DecorationImage(
-          image: AssetImage('assets/images/screen_map.png'),
-          fit: BoxFit.cover,
-          opacity: 0.3,
+    final routePoints =
+        state.routePoints.map((p) => LatLng(p.lat, p.lng)).toList();
+
+    final routeColor = _routeColor(state.activeRiskLevel);
+    final hazardCircles = state.nearbyHazards
+        .map(
+          (hazard) => CircleMarker(
+            point: LatLng(hazard.lat, hazard.lng),
+            radius: 200,
+            useRadiusInMeter: true,
+            color: _hazardColor(hazard.severity).withValues(alpha: 0.24),
+            borderColor: _hazardColor(hazard.severity),
+            borderStrokeWidth: 2,
+          ),
+        )
+        .toList();
+
+    final hazardMarkers = state.nearbyHazards
+        .map(
+          (hazard) => Marker(
+            point: LatLng(hazard.lat, hazard.lng),
+            width: 34,
+            height: 34,
+            child: GestureDetector(
+              onTap: () => _showHazardDetails(hazard),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _hazardColor(hazard.severity),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.warning_amber_rounded,
+                  size: 18,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        )
+        .toList();
+
+    final startEndMarkers = <Marker>[];
+    if (routePoints.isNotEmpty) {
+      startEndMarkers.add(
+        Marker(
+          point: routePoints.first,
+          width: 32,
+          height: 32,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.accentOrange,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: const Icon(Icons.play_arrow, color: Colors.white, size: 16),
+          ),
         ),
+      );
+      startEndMarkers.add(
+        Marker(
+          point: routePoints.last,
+          width: 32,
+          height: 32,
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.emerald,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: const Icon(Icons.flag, color: Colors.white, size: 16),
+          ),
+        ),
+      );
+    }
+
+    return FlutterMap(
+      mapController: _mapController,
+      options: const MapOptions(
+        initialCenter: LatLng(21.1065, 79.0590),
+        initialZoom: 13,
       ),
-      child: CustomPaint(
-        painter: _RouteOverlayPainter(),
-      ),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.suraksha.ai',
+        ),
+        if (hazardCircles.isNotEmpty) CircleLayer(circles: hazardCircles),
+        if (routePoints.length >= 2)
+          PolylineLayer(
+            polylines: [
+              Polyline(
+                points: routePoints,
+                color: routeColor,
+                strokeWidth: 6,
+                borderColor: Colors.white.withValues(alpha: 0.25),
+                borderStrokeWidth: 1,
+              ),
+            ],
+          ),
+        if (hazardMarkers.isNotEmpty || startEndMarkers.isNotEmpty)
+          MarkerLayer(markers: [...hazardMarkers, ...startEndMarkers]),
+      ],
     );
   }
 
   Widget _buildSearchOverlay(
-      BuildContext context, MapState state, MapNotifier notifier) {
+    BuildContext context,
+    MapState state,
+    MapNotifier notifier,
+  ) {
+    final locationNames = state.availableLocations.map((e) => e.name).toList();
+
     return Positioned(
       top: 0,
       left: 0,
@@ -82,36 +265,37 @@ class SafeMapScreen extends ConsumerWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              AppColors.backgroundDark.withValues(alpha: 0.9),
+              AppColors.backgroundDark.withValues(alpha: 0.92),
               Colors.transparent,
             ],
           ),
         ),
         child: Column(
           children: [
-            _buildSearchField(
-              context,
+            _buildLocationDropdown(
               icon: Icons.my_location,
               iconColor: AppColors.accentOrange,
-              value: state.origin,
-              hint: 'Current Location',
+              value: locationNames.contains(state.origin) ? state.origin : null,
+              hint: 'Select start location',
+              locations: locationNames,
               onChanged: notifier.setOrigin,
             ),
             const SizedBox(height: 8),
-            _buildSearchField(
-              context,
+            _buildLocationDropdown(
               icon: Icons.location_on,
               iconColor: AppColors.emerald,
-              value: state.destination,
-              hint: 'Where to?',
+              value: locationNames.contains(state.destination)
+                  ? state.destination
+                  : null,
+              hint: 'Select destination',
+              locations: locationNames,
               onChanged: notifier.setDestination,
             ),
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed:
-                    state.isSearching ? null : () => notifier.searchRoute(),
+                onPressed: state.isSearching ? null : notifier.searchRoute,
                 icon: state.isSearching
                     ? const SizedBox(
                         width: 16,
@@ -135,44 +319,84 @@ class SafeMapScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSearchField(
-    BuildContext context, {
+  Widget _buildLocationDropdown({
     required IconData icon,
     required Color iconColor,
-    required String value,
+    required String? value,
     required String hint,
+    required List<String> locations,
     required ValueChanged<String> onChanged,
   }) {
     return Container(
-      height: 48,
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: AppColors.backgroundDark.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          const SizedBox(width: 12),
           Icon(icon, color: iconColor, size: 18),
           const SizedBox(width: 8),
           Expanded(
-            child: TextField(
-              controller: TextEditingController(text: value),
-              onChanged: onChanged,
-              style:
-                  const TextStyle(color: AppColors.textPrimary, fontSize: 14),
-              decoration: InputDecoration(
-                hintText: hint,
+            child: DropdownButtonFormField<String>(
+              initialValue: value,
+              isExpanded: true,
+              dropdownColor: AppColors.slate900,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+              ),
+              iconEnabledColor: AppColors.textSecondary,
+              decoration: const InputDecoration(
+                isDense: true,
                 border: InputBorder.none,
                 enabledBorder: InputBorder.none,
                 focusedBorder: InputBorder.none,
-                fillColor: Colors.transparent,
-                filled: true,
                 contentPadding: EdgeInsets.zero,
-                isDense: true,
               ),
+              hint: Text(
+                hint,
+                style: const TextStyle(color: AppColors.textDisabled),
+              ),
+              items: locations
+                  .map(
+                    (name) => DropdownMenuItem<String>(
+                      value: name,
+                      child: Text(name, overflow: TextOverflow.ellipsis),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (selected) {
+                if (selected != null) onChanged(selected);
+              },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInlineMessage(BuildContext context, String message) {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 196,
+      left: 16,
+      right: 16,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.crimsonDim,
+          border: Border.all(color: AppColors.crimson.withValues(alpha: 0.5)),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          message,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
       ),
     );
   }
@@ -185,7 +409,7 @@ class SafeMapScreen extends ConsumerWidget {
         children: [
           _floatingButton(Icons.layers, () {}),
           const SizedBox(height: 12),
-          _floatingButton(Icons.navigation, () => notifier.searchRoute()),
+          _floatingButton(Icons.navigation, notifier.searchRoute),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
@@ -246,7 +470,11 @@ class SafeMapScreen extends ConsumerWidget {
   }
 
   Widget _buildRouteSheet(
-      BuildContext context, RouteInfo route, MapNotifier notifier) {
+    BuildContext context,
+    RouteInfo route,
+    int nearbyHazards,
+    MapNotifier notifier,
+  ) {
     final dangerColor = route.dangerScore <= 30
         ? AppColors.emerald
         : route.dangerScore <= 60
@@ -259,6 +487,10 @@ class SafeMapScreen extends ConsumerWidget {
             ? 'Caution'
             : 'Danger';
 
+    final warningText = nearbyHazards > 0
+        ? '⚠ Danger zone detected along this route.'
+        : '✅ No hazard zone detected near this route.';
+
     return Positioned(
       bottom: 0,
       left: 0,
@@ -267,9 +499,7 @@ class SafeMapScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: AppColors.backgroundDark,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: const Border(
-            top: BorderSide(color: AppColors.slate800),
-          ),
+          border: const Border(top: BorderSide(color: AppColors.slate800)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.5),
@@ -285,7 +515,6 @@ class SafeMapScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Drag handle
                 Container(
                   width: 48,
                   height: 5,
@@ -295,8 +524,6 @@ class SafeMapScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Title row
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -313,7 +540,12 @@ class SafeMapScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Via ${route.via} • ${route.estimatedTime}',
+                            '${route.origin} → ${route.destination}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${route.distanceKm?.toStringAsFixed(1) ?? '--'} km • Risk ${route.riskLevel ?? '--'} • ${route.estimatedTime}',
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
@@ -347,7 +579,7 @@ class SafeMapScreen extends ConsumerWidget {
                                 fontSize: 20,
                                 fontWeight: FontWeight.w900,
                               ),
-                              children: [
+                              children: const [
                                 TextSpan(
                                   text: '/100',
                                   style: TextStyle(
@@ -371,14 +603,25 @@ class SafeMapScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-
-                // Safety metrics
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    warningText,
+                    style: TextStyle(
+                      color: nearbyHazards > 0
+                          ? AppColors.amber
+                          : AppColors.emerald,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: _metricCard(
-                        context,
                         icon: Icons.lightbulb,
                         iconColor: AppColors.emerald,
                         title: 'Good Lighting',
@@ -389,22 +632,19 @@ class SafeMapScreen extends ConsumerWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _metricCard(
-                        context,
                         icon: Icons.warning_amber,
                         iconColor: AppColors.amber,
-                        title: '${route.recentIncidents} Recent Incidents',
-                        subtitle: 'Last 24 hours',
+                        title: '$nearbyHazards Nearby Hazards',
+                        subtitle: 'Near selected route',
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 20),
-
-                // Start navigation button
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () => notifier.startNavigation(),
+                    onPressed: notifier.startNavigation,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.accentOrange,
                       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -414,10 +654,8 @@ class SafeMapScreen extends ConsumerWidget {
                     ),
                     child: const Text(
                       'Start Navigation',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -429,8 +667,7 @@ class SafeMapScreen extends ConsumerWidget {
     );
   }
 
-  Widget _metricCard(
-    BuildContext context, {
+  Widget _metricCard({
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -482,82 +719,30 @@ class SafeMapScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
-class _RouteOverlayPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Safe route (emerald green, solid)
-    final safePaint = Paint()
-      ..color = AppColors.emerald
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    final safePath = Path()
-      ..moveTo(size.width * 0.25, size.height * 0.25)
-      ..quadraticBezierTo(
-        size.width * 0.35,
-        size.height * 0.35,
-        size.width * 0.35,
-        size.height * 0.5,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.4,
-        size.height * 0.55,
-        size.width * 0.6,
-        size.height * 0.6,
-      );
-
-    canvas.drawPath(safePath, safePaint);
-
-    // Caution route (amber, dashed simulation)
-    final cautionPaint = Paint()
-      ..color = AppColors.amber.withValues(alpha: 0.6)
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    final cautionPath = Path()
-      ..moveTo(size.width * 0.25, size.height * 0.25)
-      ..quadraticBezierTo(
-        size.width * 0.15,
-        size.height * 0.4,
-        size.width * 0.2,
-        size.height * 0.55,
-      )
-      ..quadraticBezierTo(
-        size.width * 0.3,
-        size.height * 0.58,
-        size.width * 0.6,
-        size.height * 0.6,
-      );
-
-    canvas.drawPath(cautionPath, cautionPaint);
-
-    // Origin marker
-    canvas.drawCircle(
-      Offset(size.width * 0.25, size.height * 0.25),
-      8,
-      Paint()..color = AppColors.accentOrange,
-    );
-
-    // Destination marker
-    canvas.drawCircle(
-      Offset(size.width * 0.6, size.height * 0.6),
-      8,
-      Paint()..color = AppColors.emerald,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.6, size.height * 0.6),
-      10,
-      Paint()
-        ..color = Colors.white
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
+  Color _routeColor(String? riskLevel) {
+    switch ((riskLevel ?? '').toUpperCase()) {
+      case 'LOW':
+        return AppColors.emerald;
+      case 'MEDIUM':
+        return AppColors.amber;
+      case 'HIGH':
+        return AppColors.crimson;
+      default:
+        return AppColors.electricBlue;
+    }
   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  Color _hazardColor(String severity) {
+    switch (severity.toUpperCase()) {
+      case 'HIGH':
+        return AppColors.crimson;
+      case 'MEDIUM':
+        return AppColors.amber;
+      case 'LOW':
+        return const Color(0xFFFACC15);
+      default:
+        return AppColors.amber;
+    }
+  }
 }

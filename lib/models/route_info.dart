@@ -11,6 +11,8 @@ class RouteInfo {
   final double lightingCoverage;
   final int recentIncidents;
   final bool isNavigating;
+  final double? distanceKm;
+  final String? riskLevel;
 
   const RouteInfo({
     required this.id,
@@ -23,6 +25,8 @@ class RouteInfo {
     this.lightingCoverage = 0.0,
     this.recentIncidents = 0,
     this.isNavigating = false,
+    this.distanceKm,
+    this.riskLevel,
   });
 
   RouteInfo copyWith({
@@ -36,6 +40,8 @@ class RouteInfo {
     double? lightingCoverage,
     int? recentIncidents,
     bool? isNavigating,
+    double? distanceKm,
+    String? riskLevel,
   }) {
     return RouteInfo(
       id: id ?? this.id,
@@ -48,6 +54,8 @@ class RouteInfo {
       lightingCoverage: lightingCoverage ?? this.lightingCoverage,
       recentIncidents: recentIncidents ?? this.recentIncidents,
       isNavigating: isNavigating ?? this.isNavigating,
+      distanceKm: distanceKm ?? this.distanceKm,
+      riskLevel: riskLevel ?? this.riskLevel,
     );
   }
 
@@ -57,11 +65,14 @@ class RouteInfo {
       origin: json['origin'] as String,
       destination: json['destination'] as String,
       dangerScore: json['danger_score'] as int,
-      safetyLevel: RouteSafetyLevel.values.byName(json['safety_level'] as String),
+      safetyLevel:
+          RouteSafetyLevel.values.byName(json['safety_level'] as String),
       estimatedTime: json['estimated_time'] as String,
       via: json['via'] as String? ?? '',
       lightingCoverage: (json['lighting_coverage'] as num?)?.toDouble() ?? 0.0,
       recentIncidents: json['recent_incidents'] as int? ?? 0,
+      distanceKm: (json['distance_km'] as num?)?.toDouble(),
+      riskLevel: json['risk_level'] as String?,
     );
   }
 
@@ -76,6 +87,8 @@ class RouteInfo {
       'via': via,
       'lighting_coverage': lightingCoverage,
       'recent_incidents': recentIncidents,
+      'distance_km': distanceKm,
+      'risk_level': riskLevel,
     };
   }
 }

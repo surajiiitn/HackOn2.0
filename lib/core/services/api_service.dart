@@ -11,7 +11,12 @@ class ApiService {
 
   static String get baseUrl {
     if (_baseUrlFromEnv.isNotEmpty) return _baseUrlFromEnv;
-    if (kIsWeb) return 'http://localhost:8000/api/v1';
+    if (kIsWeb) {
+      final webUri = Uri.base;
+      final host = webUri.host.isNotEmpty ? webUri.host : 'localhost';
+      final scheme = webUri.scheme == 'https' ? 'https' : 'http';
+      return '$scheme://$host:8000/api/v1';
+    }
 
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:

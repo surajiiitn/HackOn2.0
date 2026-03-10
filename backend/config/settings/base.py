@@ -191,6 +191,10 @@ SMS_PROVIDER = env("SMS_PROVIDER", default="console")
 SMS_API_KEY = env("SMS_API_KEY", default="")
 SMS_SENDER_ID = env("SMS_SENDER_ID", default="SURAKSHA")
 
+# Fast2SMS
+FAST2SMS_API_KEY = env("FAST2SMS_API_KEY", default="")
+FAST2SMS_EMERGENCY_CONTACTS = env.list("FAST2SMS_EMERGENCY_CONTACTS", default=[])
+
 # Twilio
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID", default="")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN", default="")
