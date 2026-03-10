@@ -15,6 +15,15 @@ build/
 # Stitch API token (never commit)
 stitch-assets/project-index.json
 
+# Backend
+backend/.env
+backend/staticfiles/
+backend/media/
+backend/__pycache__/
+backend/**/__pycache__/
+*.pyc
+*.pyo
+
 # OS
 .DS_Store
 Thumbs.db
