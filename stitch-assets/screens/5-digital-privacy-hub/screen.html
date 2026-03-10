@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Digital Privacy &amp; Deepfake Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3b82f6", // Electric Blue for the Scan button
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                        "accent-orange": "#ec5b13",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .pulse-glow {
+            box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Header -->
+<header class="flex items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 sticky top-0 z-10 justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl">shield_lock</span>
+<h1 class="text-xl font-bold tracking-tight">PrivacyGuard <span class="text-primary">AI</span></h1>
+</div>
+<div class="flex gap-4">
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center justify-center p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-600 dark:text-slate-400">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Hero Stats -->
+<div class="flex flex-wrap gap-4 p-4 lg:p-6">
+<div class="flex min-w-[280px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Identity Integrity Score</p>
+<div class="flex items-end gap-2">
+<p class="text-4xl font-bold leading-none">74<span class="text-xl text-slate-400">/100</span></p>
+<span class="flex items-center text-accent-orange text-sm font-bold mb-1">
+<span class="material-symbols-outlined text-sm">trending_down</span> 4%
+                        </span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 74%"></div>
+</div>
+</div>
+<div class="flex min-w-[280px] flex-1 flex-col gap-2 rounded-xl p-6 bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800">
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium uppercase tracking-wider">Deepfake Exposure</p>
+<div class="flex items-end gap-2">
+<p class="text-4xl font-bold leading-none">Low</p>
+<span class="flex items-center text-green-500 text-sm font-bold mb-1">
+<span class="material-symbols-outlined text-sm">check_circle</span> SECURE
+                        </span>
+</div>
+<p class="text-slate-500 text-xs mt-2">24 verified professional profiles scanned</p>
+</div>
+</div>
+<!-- Main Action: Pulse Scan Button -->
+<div class="px-4 py-6 flex flex-col items-center">
+<button class="pulse-glow group relative flex min-w-[280px] max-w-[400px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-full h-16 px-8 bg-primary text-white gap-3 transition-transform hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined text-2xl animate-spin-slow">radar</span>
+<span class="text-lg font-bold tracking-wide">Scan My Digital Footprint</span>
+</button>
+<p class="text-slate-500 text-xs mt-4 italic">Powered by DeepSearch AI Engine • Last scan: 2 hours ago</p>
+</div>
+<!-- Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 lg:p-6">
+<!-- Flagged Breaches Section -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-accent-orange">warning</span>
+                            Flagged Breaches
+                        </h2>
+<span class="px-2 py-1 bg-accent-orange/10 text-accent-orange text-xs font-bold rounded">ACTION REQUIRED</span>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Breach Card 1 -->
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-accent-orange/50 transition-colors">
+<div class="p-3 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600">
+<span class="material-symbols-outlined">alternate_email</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold">Email leaked in 2024 Data Breach</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Found in "GlobalTech" database dump. Password rotation recommended.</p>
+<div class="mt-3 flex gap-2">
+<button class="text-xs font-bold text-primary hover:underline">View Source</button>
+<button class="text-xs font-bold text-slate-400">Ignore</button>
+</div>
+</div>
+</div>
+<!-- Breach Card 2 -->
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-accent-orange/50 transition-colors">
+<div class="p-3 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">face_retouching_off</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold">Unidentified AI Image Found</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">High-probability synthetic image resembling your likeness detected on Reddit.</p>
+<div class="mt-3 flex gap-2">
+<button class="text-xs font-bold text-primary hover:underline">Analyze Metadata</button>
+<button class="text-xs font-bold text-accent-orange">Takedown Request</button>
+</div>
+</div>
+</div>
+<!-- Breach Card 3 -->
+<div class="flex items-start gap-4 p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+<div class="p-3 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600">
+<span class="material-symbols-outlined">map</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold">Location Data Exposure</h3>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Aggregated location history sold by 'DataBrokerX' to 3 advertising networks.</p>
+<button class="mt-3 text-xs font-bold text-primary hover:underline">Opt-out of Sale</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Legal/Takedown Section -->
+<section class="flex flex-col gap-4">
+<h2 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">gavel</span>
+                        Takedown Actions
+                    </h2>
+<div class="flex flex-col h-full gap-4">
+<!-- Action Card -->
+<div class="flex-1 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 relative overflow-hidden">
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div>
+<div class="flex items-center gap-2 mb-4">
+<span class="px-2 py-0.5 bg-primary rounded text-[10px] font-bold">REGULATORY READY</span>
+<span class="text-slate-400 text-xs">DPDP Act (India)</span>
+</div>
+<h3 class="text-2xl font-bold mb-2">Legal Notice Generator</h3>
+<p class="text-slate-400 text-sm max-w-sm">Automate the creation of enforceable takedown notices and privacy compliance reports under latest DPDP mandates.</p>
+</div>
+<div class="mt-8 flex flex-col sm:flex-row gap-3">
+<button class="flex-1 flex items-center justify-center gap-2 bg-white text-slate-900 rounded-lg py-3 px-4 font-bold hover:bg-slate-100 transition-colors">
+<span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+                                        Export PDF for cybercrime.gov.in
+                                    </button>
+<button class="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg py-3 px-6 font-bold transition-colors">
+                                        Draft Notice
+                                    </button>
+</div>
+</div>
+<!-- Background Decoration -->
+<span class="material-symbols-outlined absolute -bottom-10 -right-10 text-[200px] opacity-10 rotate-12">description</span>
+</div>
+<!-- Data Governance Card -->
+<div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6">
+<div class="flex items-center gap-4">
+<div class="size-16 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">fingerprint</span>
+</div>
+<div class="flex-1">
+<h4 class="font-bold">Biometric Vault</h4>
+<p class="text-sm text-slate-500">Securely store and hash your facial data to prevent deepfake spoofing.</p>
+</div>
+<button class="rounded-full size-10 flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full flex gap-2 border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 pb-4 pt-2 z-20">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined fill-1">dashboard</span>
+</div>
+<p class="text-[10px] font-bold leading-normal uppercase">Dashboard</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">search</span>
+</div>
+<p class="text-[10px] font-bold leading-normal uppercase">Deep Scans</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">gavel</span>
+</div>
+<p class="text-[10px] font-bold leading-normal uppercase">Legal</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 hover:text-primary transition-colors" href="#">
+<div class="flex h-8 items-center justify-center">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+<p class="text-[10px] font-bold leading-normal uppercase">Profile</p>
+</a>
+</nav>
+</div>
+</body></html>

@@ -1,0 +1,39 @@
+{
+  "screenId": "208cf26eb94e416b87ccae0aa35f94da",
+  "title": "Command Center Dashboard",
+  "folder": "2-command-center-dashboard",
+  "projectId": "17688577174421149570",
+  "files": {
+    "screenshot": "screenshot.png",
+    "htmlCode": "screen.html",
+    "metadata": "metadata.json"
+  },
+  "designTokens": {
+    "colors": [
+      "#000000",
+      "#10b981",
+      "#3b82f6",
+      "#dc2626",
+      "#ec5b13",
+      "#f8f6f6",
+      "rgba(220,38,38,0.5)"
+    ],
+    "fonts": []
+  },
+  "screenDetail": {
+    "deviceType": "MOBILE",
+    "height": "1868",
+    "htmlCode": {
+      "downloadUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzBiZTY3NjNkODU2NjRjOTY5YmNkNjNjMGEwZDU3NTRjEgsSBxDUps-T1wcYAZIBJAoKcHJvamVjdF9pZBIWQhQxNzY4ODU3NzE3NDQyMTE0OTU3MA&filename=&opi=89354086",
+      "mimeType": "text/html",
+      "name": "projects/17688577174421149570/files/0fe6e8f57ea649fb8fdd5b0297485c1a"
+    },
+    "name": "projects/17688577174421149570/screens/208cf26eb94e416b87ccae0aa35f94da",
+    "screenshot": {
+      "downloadUrl": "https://lh3.googleusercontent.com/aida/AOfcidVicbHWSnR8hIZVbDJ3wIUg4x9d6FkGjwrQiCv8rb-jF88Np9Ga6l3utT3d7tvR9O7ljkbO_0y6X2OluWrS4nabErREjvcxzLBlmXStXltjt6-lvqF5ONY3lPbTqQSNcVZjUcQzbR8cxSxzmIMWSrkpRECegIberPVssY7ppKUtdjMgynrs42iVy_5oD9Vgw4RUmVVLtEYbKQTj05WWb_x3ZDlXOyHK_j2OzBzeJkIT0NHzi-VjAJ1Gj6o",
+      "name": "projects/17688577174421149570/files/3da0f7b65d5645aa920bb1693c841a37"
+    },
+    "title": "2. Command Center Dashboard",
+    "width": "780"
+  }
+}

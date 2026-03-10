@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3b82f6", // Electric Blue for high contrast
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#0a1122", // Deep Navy
+                        "surface-dark": "#161f33",
+                        "border-dark": "#2a3a5a"
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.25rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+        }
+        .otp-input {
+            width: 3rem;
+            height: 3.5rem;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="max-w-md mx-auto min-h-screen flex flex-col p-6">
+<!-- Header -->
+<header class="flex flex-col items-center mt-8 mb-12">
+<div class="bg-primary/10 p-4 rounded-2xl mb-6">
+<span class="material-symbols-outlined text-primary text-5xl" style="font-variation-settings: 'FILL' 1">shield_person</span>
+</div>
+<h1 class="text-3xl font-bold tracking-tight text-slate-100">Suraksha AI</h1>
+<p class="text-slate-400 mt-2 text-center">Enterprise-grade safety at your fingertips</p>
+</header>
+<!-- Main Auth Content -->
+<div class="flex-1 space-y-8">
+<!-- Step 1: Phone Input -->
+<section class="space-y-4">
+<div class="space-y-2">
+<label class="text-sm font-semibold text-slate-300 ml-1">Secure Login</label>
+<div class="flex gap-3">
+<div class="flex items-center justify-center bg-surface-dark border border-border-dark rounded-xl px-4 text-slate-200 font-medium">
+                            +91
+                        </div>
+<div class="relative flex-1">
+<input class="w-full bg-surface-dark border-border-dark border rounded-xl h-14 px-4 text-white focus:ring-2 focus:ring-primary focus:border-transparent placeholder:text-slate-500" placeholder="Phone Number" type="tel" value=""/>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                    Send Verification Code
+                    <span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</section>
+<!-- Step 2: OTP (Hidden/State Representation) -->
+<section class="space-y-4 pt-4">
+<div class="flex justify-between items-center">
+<label class="text-sm font-semibold text-slate-300 ml-1">Verification Code</label>
+<button class="text-xs text-primary font-medium">Resend in 0:45</button>
+</div>
+<div class="flex justify-between gap-2">
+<input class="otp-input bg-surface-dark border-border-dark border rounded-xl text-white focus:ring-2 focus:ring-primary focus:border-transparent" maxlength="1" type="text"/>
+<input class="otp-input bg-surface-dark border-border-dark border rounded-xl text-white focus:ring-2 focus:ring-primary focus:border-transparent" maxlength="1" type="text"/>
+<input class="otp-input bg-surface-dark border-border-dark border rounded-xl text-white focus:ring-2 focus:ring-primary focus:border-transparent" maxlength="1" type="text"/>
+<input class="otp-input bg-surface-dark border-border-dark border rounded-xl text-white focus:ring-2 focus:ring-primary focus:border-transparent" maxlength="1" type="text"/>
+<input class="otp-input bg-surface-dark border-border-dark border rounded-xl text-white focus:ring-2 focus:ring-primary focus:border-transparent" maxlength="1" type="text"/>
+<input class="otp-input bg-surface-dark border-border-dark border rounded-xl text-white focus:ring-2 focus:ring-primary focus:border-transparent" maxlength="1" type="text"/>
+</div>
+</section>
+<!-- Permissions Onboarding Section -->
+<section class="bg-surface-dark/50 border border-border-dark rounded-2xl p-6 space-y-6">
+<h3 class="font-bold text-lg text-slate-100 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+                    Security Permissions
+                </h3>
+<div class="space-y-5">
+<!-- Permission Item 1 -->
+<div class="flex items-start gap-4">
+<div class="bg-primary/10 p-2 rounded-lg mt-1">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 0">location_on</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-slate-100">Precise Location</h4>
+<p class="text-xs text-slate-400">Required for real-time SOS tracking and geofencing alerts.</p>
+</div>
+<div class="flex items-center h-full pt-1">
+<div class="w-10 h-5 bg-primary rounded-full relative">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Permission Item 2 -->
+<div class="flex items-start gap-4">
+<div class="bg-primary/10 p-2 rounded-lg mt-1">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 0">mic</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-slate-100">Microphone Access</h4>
+<p class="text-xs text-slate-400">Used for voice-activated SOS triggers and audio surveillance.</p>
+</div>
+<div class="flex items-center h-full pt-1">
+<div class="w-10 h-5 bg-primary rounded-full relative">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-white rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Permission Item 3 -->
+<div class="flex items-start gap-4">
+<div class="bg-primary/10 p-2 rounded-lg mt-1">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 0">sms</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-semibold text-slate-100">SMS &amp; Emergency Contacts</h4>
+<p class="text-xs text-slate-400">Automatically alerts your trusted network during emergencies.</p>
+</div>
+<div class="flex items-center h-full pt-1">
+<div class="w-10 h-5 bg-slate-700 rounded-full relative">
+<div class="absolute left-0.5 top-0.5 w-4 h-4 bg-slate-400 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer Footer -->
+<footer class="mt-auto pt-8 pb-4">
+<button class="w-full border-2 border-primary text-primary font-bold py-4 rounded-xl hover:bg-primary/5 transition-all">
+                Complete Setup
+            </button>
+<p class="text-[10px] text-center text-slate-500 mt-6 uppercase tracking-widest font-bold">
+                Protected by End-to-End Encryption
+            </p>
+</footer>
+</div>
+<!-- Decorative Elements (Optional for "AI" feel) -->
+<div class="fixed top-0 right-0 -z-10 w-64 h-64 bg-primary/5 blur-[120px]"></div>
+<div class="fixed bottom-0 left-0 -z-10 w-96 h-96 bg-primary/5 blur-[150px]"></div>
+</body></html>

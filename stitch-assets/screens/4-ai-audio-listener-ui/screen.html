@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3b82f6",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Header -->
+<header class="flex items-center bg-slate-100/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-10 p-4 border-b border-slate-200 dark:border-slate-800 justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-2xl">waves</span>
+<h2 class="text-lg font-bold leading-tight tracking-tight">Edge AI Audio Listener</h2>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-slate-200/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="flex items-center justify-center rounded-xl h-10 w-10 bg-slate-200/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex flex-col p-6 max-w-lg mx-auto w-full gap-8">
+<!-- Oscilloscope Waveform Section -->
+<div class="flex flex-col items-center justify-center gap-6 py-8">
+<div class="relative w-full aspect-video bg-slate-900 rounded-xl overflow-hidden border border-primary/30 shadow-lg shadow-primary/10 flex items-center justify-center">
+<!-- Mock Waveform Grid -->
+<div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: radial-gradient(circle, #3b82f6 1px, transparent 1px); background-size: 20px 20px;">
+</div>
+<!-- SVG Waveform -->
+<svg class="w-full h-48 text-primary" preserveaspectratio="none" viewbox="0 0 400 100">
+<path class="opacity-40" d="M0 50 Q 25 10, 50 50 T 100 50 T 150 50 T 200 50 T 250 50 T 300 50 T 350 50 T 400 50" fill="none" stroke="currentColor" stroke-width="2"></path>
+<path d="M0 50 Q 20 20, 40 50 T 80 50 T 120 50 T 160 50 T 200 50 T 240 50 T 280 50 T 320 50 T 360 50 T 400 50" fill="none" stroke="currentColor" stroke-width="3"></path>
+</svg>
+<div class="absolute bottom-4 left-4 flex items-center gap-2">
+<div class="size-2 bg-primary rounded-full animate-pulse"></div>
+<span class="text-xs font-medium text-primary uppercase tracking-widest">Live Signal</span>
+</div>
+</div>
+<div class="text-center">
+<h3 class="text-xl font-bold tracking-tight mb-1">Analyzing Ambient Sound...</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Real-time local processing active</p>
+</div>
+</div>
+<!-- Trigger Words Selection -->
+<section>
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold tracking-tight">Trigger Words</h3>
+<span class="text-xs font-medium bg-primary/10 text-primary px-2 py-1 rounded-full">4 Active</span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="p-4 rounded-xl bg-primary text-white border border-primary flex flex-col gap-1 cursor-pointer">
+<span class="text-xs opacity-80 font-medium">English</span>
+<span class="text-lg font-bold">Help</span>
+</div>
+<div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col gap-1 cursor-pointer">
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Hindi</span>
+<span class="text-lg font-bold">Bachao</span>
+</div>
+<div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col gap-1 cursor-pointer">
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Tamil</span>
+<span class="text-lg font-bold">Kaapaatru</span>
+</div>
+<div class="p-4 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex flex-col gap-1 cursor-pointer">
+<span class="text-xs text-slate-500 dark:text-slate-400 font-medium">Bengali</span>
+<span class="text-lg font-bold">Banchao</span>
+</div>
+</div>
+</section>
+<!-- Sensitivity Slider -->
+<section class="mt-auto pb-8">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-slate-500">mic</span>
+<h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Microphone Sensitivity</h3>
+</div>
+<div class="px-2">
+<input class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary" max="100" min="0" type="range" value="65"/>
+<div class="flex justify-between mt-3">
+<div class="flex flex-col items-start">
+<span class="text-xs font-bold text-slate-700 dark:text-slate-300">Quiet</span>
+<span class="text-[10px] text-slate-500">Library, Home</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs font-bold text-slate-700 dark:text-slate-300">Crowded Street</span>
+<span class="text-[10px] text-slate-500">Subway, Traffic</span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pb-6 pt-3 sticky bottom-0">
+<div class="flex max-w-lg mx-auto">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">mic</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">Listen</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">shield</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">Safety</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">emergency</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">Contacts</p>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400 dark:text-slate-500" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<p class="text-[10px] font-bold uppercase tracking-widest">Profile</p>
+</a>
+</div>
+</nav>
+</body></html>

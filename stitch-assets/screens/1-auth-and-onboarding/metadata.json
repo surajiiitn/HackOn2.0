@@ -1,0 +1,39 @@
+{
+  "screenId": "039b1691295546189c72febce1adbbfb",
+  "title": "Auth & Onboarding",
+  "folder": "1-auth-and-onboarding",
+  "projectId": "17688577174421149570",
+  "files": {
+    "screenshot": "screenshot.png",
+    "htmlCode": "screen.html",
+    "metadata": "metadata.json"
+  },
+  "designTokens": {
+    "colors": [
+      "#0a1122",
+      "#161f33",
+      "#2a3a5a",
+      "#3b82f6",
+      "#f8f6f6"
+    ],
+    "fonts": [
+      "Public Sans', sans-serif"
+    ]
+  },
+  "screenDetail": {
+    "deviceType": "MOBILE",
+    "height": "2248",
+    "htmlCode": {
+      "downloadUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzVlNDc1NzkzNWE3MjQ5YTU4NjI2YjUwMDMzNTdlY2FiEgsSBxDUps-T1wcYAZIBJAoKcHJvamVjdF9pZBIWQhQxNzY4ODU3NzE3NDQyMTE0OTU3MA&filename=&opi=89354086",
+      "mimeType": "text/html",
+      "name": "projects/17688577174421149570/files/0ecbf5827baf4d3bb6d5acde80cd0735"
+    },
+    "name": "projects/17688577174421149570/screens/039b1691295546189c72febce1adbbfb",
+    "screenshot": {
+      "downloadUrl": "https://lh3.googleusercontent.com/aida/AOfcidXlOmhQwSIPB00w1IoO1by75z7cHkSovgjZNuIi_Bhf1S1EVHJztuo_6MmFP5MgxpzoiLGsQzRT_OCpe8j1SZsDCfi72BDl0e90cwROfeVVsKe011HhsSE3CGZW697PX67rgcbCxgJ1wVIJi7prdyR7RofySmpJOIydubKB7PCgZe9dvj4ycyThD9XaCw-yL2B9gsLj5onGWmVMlZ2Ht0ZV9lZxQ3rSl9fqJgB9B0ItZ65mSTrkAmR9RDLL",
+      "name": "projects/17688577174421149570/files/4ee3b2d60dc647358ba13ef96411ad5a"
+    },
+    "title": "1. Auth & Onboarding",
+    "width": "780"
+  }
+}

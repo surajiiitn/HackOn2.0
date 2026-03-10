@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Offline Fallback &amp; Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#10b981", // Emerald Green
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#060a08", // Deep Dark Mode
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-background-light dark:bg-background-dark overflow-x-hidden border-x border-slate-200 dark:border-slate-800">
+<!-- Header -->
+<div class="flex items-center p-4 pb-2 justify-between sticky top-0 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md z-10">
+<div class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-start cursor-pointer">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1">Offline &amp; Safety Settings</h2>
+<div class="text-slate-900 dark:text-slate-100 flex size-12 shrink-0 items-center justify-end cursor-pointer">
+<span class="material-symbols-outlined">info</span>
+</div>
+</div>
+<!-- Emergency Contacts Section -->
+<div class="px-4 py-4">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight">Emergency Contacts</h3>
+<span class="text-primary text-xs font-semibold cursor-pointer uppercase tracking-wider">Edit List</span>
+</div>
+<div class="flex w-full overflow-x-auto no-scrollbar gap-4 pb-2">
+<!-- Add Button -->
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 bg-primary/10 border-2 border-dashed border-primary/40 rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary">add</span>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-xs font-medium">Add</p>
+</div>
+<!-- Contact Placeholders -->
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden grayscale opacity-60">
+<img alt="Contact Avatar" class="w-full h-full object-cover" data-alt="Portrait of a person for contact list" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJnF9cvuGZloivCulMRCW7zzJEk0qOzBLYxb0YrkagNplMHkIKSi4dJEvFUEqFhLsT1EkaJ3w977Mwnez5Pn0P9algkOgMIkk4LuXtsdG4xEW23-jnKKCY-UjK47f3j9eO2Xs5aK0NQzIo_HzWlTGO-JR-_ohl22DHUYazj7uEI4wWnT6J9mRWvbrftJJkWIk1jP_CGwFnP6ielkRTDZBvSOPIKLlzTboduPcp0xUOun97OsCe5S2apgoPTyZ1U8bE1e28VSc_nI33"/>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-xs font-medium">Mom</p>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden grayscale opacity-60">
+<img alt="Contact Avatar" class="w-full h-full object-cover" data-alt="Portrait of a young woman smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCL9Sc_t15YuQlxhhDs-Fp3VVAp55iyUpgq2lNmvpOO8IQ2vRrjcbs8NU08EqWlLcwEHdIIEXnMtknQ3vSFtqU0OioO-IdeEe4xYqj0hkO4Zy4u6C0kFhT69_t6ZbMU2fYSSauhfbkhCvlxL5ko4VBO13sauOzu7C3hBXGsNuWGCEvPfwFi3ihxjIV8c-L8eHvVuZr7cJldcUIErmUC9s0NReG8bdJp6P-ISJtWuTjmWqKTRusXASCbQI1a5cW7XiNtnaGvwMX5mHEV"/>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-xs font-medium">Sarah</p>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden grayscale opacity-60">
+<img alt="Contact Avatar" class="w-full h-full object-cover" data-alt="Portrait of a man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAs-XSIe517wZyHBf3HgedEcN8AX1IBu6FqhqBukthF_hw-GtdKM3uaDC6zgnPwkxpZGlRblSmpvs3zTFWys3jLzE2M1_Gy95Q7iyW3n6oZVvrUhTbH2eOY0H6uayiClkNREXCjo5I8Og0G0cxhqEJtl6Kxft-g0AEacMfsMdo32MiXZ66ZsDEcytW-MsDubXIb-OLrmQ1333zcrPaW5CNTsWAFFhjKxVaj5sl2T4dNl6xSlMVBz_Sg86e9qQ9noq8izYG_1i-2guYk"/>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-xs font-medium">Dad</p>
+</div>
+<div class="flex flex-col items-center gap-2 min-w-[72px]">
+<div class="w-14 h-14 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden grayscale opacity-60">
+<img alt="Contact Avatar" class="w-full h-full object-cover" data-alt="Close up portrait of a person" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2oZrnB-JdtmBOirgbvQhK0imkR-KlZnZwkAZWC541b3_tBIasSiLSbnHv29iyDxyYLw_sXzLPHWc12nw6sYZZjsg4wKT9uoa8p9ojMYb6Sb0-heJxpQKEIuUXYoiHthlnXFPt9-UMABMwkwebj1tiUaSKuNaQg8v9Kz0Zu2RsgWWOmBnqgmqC0qKBk8x9AfP5QPTN9U2bKXvYt0Ry1sRSwjjaaCi5ksw0EKW2e83wYFr8u8mFVeV9x7pplWS4-NxBtqi6X6qAHjhm"/>
+</div>
+<p class="text-slate-600 dark:text-slate-400 text-xs font-medium">Mike</p>
+</div>
+</div>
+</div>
+<!-- SMS Routing Toggle Card -->
+<div class="p-4">
+<div class="flex flex-col items-start justify-between gap-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 p-5 shadow-sm">
+<div class="flex w-full justify-between items-start">
+<div class="flex flex-col gap-1 pr-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-xl">signal_disconnected</span>
+<p class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight">Zero-Internet Mode</p>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-relaxed mt-1">Route critical location alerts via SMS automatically when cellular data is unavailable.</p>
+</div>
+<label class="relative flex h-[31px] min-w-[51px] cursor-pointer items-center rounded-full border-none bg-slate-200 dark:bg-slate-700 p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all">
+<div class="h-full w-[27px] rounded-full bg-white shadow-md"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+<div class="w-full pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-sm">check_circle</span>
+<span class="text-xs text-slate-500 dark:text-slate-400">Offline maps available: 320MB</span>
+</div>
+</div>
+</div>
+<!-- Fake Call Settings -->
+<div class="px-4 py-4">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight mb-4">Fake Call Configuration</h3>
+<div class="bg-white dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 p-4 space-y-6">
+<!-- Caller Name Input -->
+<div class="space-y-2">
+<label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Caller Display Name</label>
+<div class="relative">
+<input class="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-lg px-4 py-3 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-primary/50 transition-all font-medium" placeholder="e.g. Boss, Mom, Uber Driver" type="text" value="Mom"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">edit</span>
+</div>
+</div>
+<!-- Delay Slider -->
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<label class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trigger Delay</label>
+<span class="text-primary font-bold">30 seconds</span>
+</div>
+<input class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary" max="300" min="5" step="5" type="range" value="30"/>
+<div class="flex justify-between text-[10px] text-slate-400 font-medium">
+<span>5s</span>
+<span>1m</span>
+<span>2m</span>
+<span>5m</span>
+</div>
+</div>
+<button class="w-full bg-primary/10 hover:bg-primary/20 text-primary font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">call</span>
+                    Test Fake Call Now
+                </button>
+</div>
+</div>
+<!-- Additional Settings List -->
+<div class="px-4 pb-24">
+<h3 class="text-slate-900 dark:text-slate-100 text-base font-bold leading-tight mb-4">General Settings</h3>
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<div class="flex items-center py-4 gap-4 cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Vibration Alerts</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Tactile feedback for silent triggers</p>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="flex items-center py-4 gap-4 cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">map</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Offline Area Management</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Download high-risk zones</p>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+<div class="flex items-center py-4 gap-4 cursor-pointer">
+<div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold text-slate-900 dark:text-slate-100">App Lock Bypass</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Allow emergency features over lockscreen</p>
+</div>
+<span class="material-symbols-outlined text-slate-400">chevron_right</span>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<div class="fixed bottom-0 w-full max-w-md border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-background-dark/95 backdrop-blur-sm px-4 pb-6 pt-2 flex justify-between items-center z-20">
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">home</span>
+<p class="text-[10px] font-medium">Home</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">shield_with_heart</span>
+<p class="text-[10px] font-medium">Alerts</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-400" href="#">
+<span class="material-symbols-outlined">map</span>
+<p class="text-[10px] font-medium">Map</p>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">settings</span>
+<p class="text-[10px] font-medium">Settings</p>
+</a>
+</div>
+</div>
+</body></html>

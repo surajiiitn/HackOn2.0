@@ -1,0 +1,35 @@
+{
+  "screenId": "2e9354e1dce949e79eca3773f295c5e5",
+  "title": "Offline Mode & Settings",
+  "folder": "6-offline-mode-and-settings",
+  "projectId": "17688577174421149570",
+  "files": {
+    "screenshot": "screenshot.png",
+    "htmlCode": "screen.html",
+    "metadata": "metadata.json"
+  },
+  "designTokens": {
+    "colors": [
+      "#060a08",
+      "#10b981",
+      "#f8f6f6"
+    ],
+    "fonts": []
+  },
+  "screenDetail": {
+    "deviceType": "MOBILE",
+    "height": "2330",
+    "htmlCode": {
+      "downloadUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sX2JiNDExNDUxMDAwZTRjYjFhODg5OGI4MWE4Nzc3ZDQxEgsSBxDUps-T1wcYAZIBJAoKcHJvamVjdF9pZBIWQhQxNzY4ODU3NzE3NDQyMTE0OTU3MA&filename=&opi=89354086",
+      "mimeType": "text/html",
+      "name": "projects/17688577174421149570/files/41e4799eead14eb9bec80f7d6753c4c6"
+    },
+    "name": "projects/17688577174421149570/screens/2e9354e1dce949e79eca3773f295c5e5",
+    "screenshot": {
+      "downloadUrl": "https://lh3.googleusercontent.com/aida/AOfcidWX0gJvNHYgXcCtrpiot8jI3BY882ozS1v7Dw1yLYoHax21DvqYSs60WTDQA5_F8pE4JfhAKmZJtIlJtLGnjDUTG886McUEd_OmxmAjUbz_RYnWaHP9C8pmo6NGUKmIsPAvRetv70ZMODL8Xdh8Re9Kk38UdJanMXtj_ZyQ3rcvMTHtkfWITa8MXOW8Uu_SpiWt1pqxq3DHVdn0WYL5qeifovTA2A_PhpeY-JFebqB12FHzeDqiYHz6rho",
+      "name": "projects/17688577174421149570/files/ffb0505f4476402e801ec05bf022ca5b"
+    },
+    "title": "6. Offline Mode & Settings",
+    "width": "780"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "servers": {
+    "stitch": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "stitch-mcp"],
+      "env": {
+        "STITCH_API_KEY": "AQ.Ab8RN6JwoGPNM25_eO9DEBtcWH96UB-bauVgcOCpt9XqHRDKyw",
+        "GOOGLE_CLOUD_PROJECT": "17688577174421149570"
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "screenId": "750ca8c449b14642a275e795a965fa3b",
+  "title": "Digital Privacy Hub",
+  "folder": "5-digital-privacy-hub",
+  "projectId": "17688577174421149570",
+  "files": {
+    "screenshot": "screenshot.png",
+    "htmlCode": "screen.html",
+    "metadata": "metadata.json"
+  },
+  "designTokens": {
+    "colors": [
+      "#221610",
+      "#3b82f6",
+      "#ec5b13",
+      "#f8f6f6",
+      "rgba(59, 130, 246, 0)",
+      "rgba(59, 130, 246, 0.7)"
+    ],
+    "fonts": [
+      "Public Sans', sans-serif"
+    ]
+  },
+  "screenDetail": {
+    "deviceType": "MOBILE",
+    "height": "3402",
+    "htmlCode": {
+      "downloadUrl": "https://contribution.usercontent.google.com/download?c=CgthaWRhX2NvZGVmeBJ8Eh1hcHBfY29tcGFuaW9uX2dlbmVyYXRlZF9maWxlcxpbCiVodG1sXzllNzU5ZTRmODZjYzQ0NmFiZWRkMTJmZTQ2MjRhZDYwEgsSBxDUps-T1wcYAZIBJAoKcHJvamVjdF9pZBIWQhQxNzY4ODU3NzE3NDQyMTE0OTU3MA&filename=&opi=89354086",
+      "mimeType": "text/html",
+      "name": "projects/17688577174421149570/files/61e66f0c42764bd7ade737bd68669e46"
+    },
+    "name": "projects/17688577174421149570/screens/750ca8c449b14642a275e795a965fa3b",
+    "screenshot": {
+      "downloadUrl": "https://lh3.googleusercontent.com/aida/AOfcidX9lSTBfIxD6WHzndqNjImSetvhuyoyNz4AvKMCElaNroZUPerq2pQk9qzD4Fqf7EwBJHtPGEQYOz4K79y7cSKeL5AUpb5CYhLngM3Rfx_g-C8J7rNSn9ulSOQa2zjii2-C5upDkoQre4hMITeOFkp8ELLV1Tdn5DIbSe4Aj0TQZoHKUH03uxRW0nr_6nexDo6QM_fM1s9ZHDwHS5K-BlHnP2QZWVSrnDznPld_fjIBGNiIrnYh6WBzzzy1",
+      "name": "projects/17688577174421149570/files/38f5a39ea1cc4743bcaae391eba930b2"
+    },
+    "title": "5. Digital Privacy Hub",
+    "width": "780"
+  }
+}
