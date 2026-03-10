@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/breach_info.dart';
+import '../core/services/api_service.dart';
 
 class PrivacyState {
   final int identityScore;
@@ -8,6 +9,8 @@ class PrivacyState {
   final bool isScanning;
   final String lastScanTime;
   final List<BreachInfo> breaches;
+  final String? activeScanId;
+  final String? error;
 
   const PrivacyState({
     this.identityScore = 74,
@@ -16,6 +19,8 @@ class PrivacyState {
     this.isScanning = false,
     this.lastScanTime = '2 hours ago',
     this.breaches = const [],
+    this.activeScanId,
+    this.error,
   });
 
   PrivacyState copyWith({
@@ -25,6 +30,8 @@ class PrivacyState {
     bool? isScanning,
     String? lastScanTime,
     List<BreachInfo>? breaches,
+    String? activeScanId,
+    String? error,
   }) {
     return PrivacyState(
       identityScore: identityScore ?? this.identityScore,
@@ -33,6 +40,8 @@ class PrivacyState {
       isScanning: isScanning ?? this.isScanning,
       lastScanTime: lastScanTime ?? this.lastScanTime,
       breaches: breaches ?? this.breaches,
+      activeScanId: activeScanId ?? this.activeScanId,
+      error: error,
     );
   }
 }
@@ -75,9 +84,42 @@ class PrivacyNotifier extends StateNotifier<PrivacyState> {
         ));
 
   Future<void> startScan() async {
-    state = state.copyWith(isScanning: true);
-    // TODO: Connect to Django API — trigger OSINT scan
-    await Future.delayed(const Duration(seconds: 3));
+    state = state.copyWith(isScanning: true, error: null);
+    try {
+      final data = await ApiService.startPrivacyScan();
+      final scanId = data['id']?.toString();
+      state = state.copyWith(activeScanId: scanId);
+
+      // Poll for scan completion
+      await _pollScanStatus(scanId);
+    } on ApiException catch (e) {
+      state = state.copyWith(isScanning: false, error: e.message);
+    } catch (_) {
+      // Fallback: simulate scan completion for offline-first
+      await Future.delayed(const Duration(seconds: 2));
+      state = state.copyWith(isScanning: false, lastScanTime: 'Just now');
+    }
+  }
+
+  Future<void> _pollScanStatus(String? scanId) async {
+    for (int i = 0; i < 10; i++) {
+      await Future.delayed(const Duration(seconds: 2));
+      try {
+        final status = await ApiService.getScanStatus(scanId: scanId);
+        final scanStatus = status['status'] as String?;
+        if (scanStatus == 'completed' || scanStatus == 'failed') {
+          final score = (status['identity_score'] as num?)?.toInt();
+          state = state.copyWith(
+            isScanning: false,
+            lastScanTime: 'Just now',
+            identityScore: score ?? state.identityScore,
+          );
+          return;
+        }
+      } catch (_) {
+        break;
+      }
+    }
     state = state.copyWith(isScanning: false, lastScanTime: 'Just now');
   }
 
@@ -85,6 +127,12 @@ class PrivacyNotifier extends StateNotifier<PrivacyState> {
     state = state.copyWith(
       breaches: state.breaches.where((b) => b.id != id).toList(),
     );
+  }
+
+  Future<void> requestTakedown(String url) async {
+    try {
+      await ApiService.generateNotice(url);
+    } catch (_) {}
   }
 }
 

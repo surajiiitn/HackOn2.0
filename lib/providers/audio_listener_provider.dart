@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/trigger_word.dart';
+import '../core/services/api_service.dart';
 
 class AudioListenerState {
   final bool isListening;
@@ -61,9 +62,17 @@ class AudioListenerNotifier extends StateNotifier<AudioListenerState> {
     state = state.copyWith(triggerWords: words);
   }
 
-  void onWordDetected(String word) {
+  Future<void> onWordDetected(String word) async {
     state = state.copyWith(detectedWord: word);
-    // TODO: Trigger SOS flow via Django API
+    try {
+      await ApiService.triggerSos(
+        latitude: 19.0760,
+        longitude: 72.8777,
+        triggerType: 'audio_keyword',
+      );
+    } catch (_) {
+      // Keep detection state even if API call fails (offline-first)
+    }
   }
 
   void clearDetection() {

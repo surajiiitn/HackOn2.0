@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/route_info.dart';
+import '../core/services/api_service.dart';
 
 class MapState {
   final String origin;
@@ -70,9 +71,41 @@ class MapNotifier extends StateNotifier<MapState> {
 
   Future<void> searchRoute() async {
     state = state.copyWith(isSearching: true, error: null);
-    // TODO: Connect to Django API + PostGIS
-    await Future.delayed(const Duration(seconds: 2));
-    state = state.copyWith(isSearching: false);
+    try {
+      // Demo coordinates (Mumbai area)
+      final data = await ApiService.getSafePath(
+        startLat: 19.0760,
+        startLng: 72.8777,
+        endLat: 19.0896,
+        endLng: 72.8656,
+      );
+
+      final dangerScore = (data['danger_score'] as num?)?.toInt() ?? 0;
+      final safetyLevel = dangerScore < 30
+          ? RouteSafetyLevel.safe
+          : dangerScore < 60
+              ? RouteSafetyLevel.caution
+              : RouteSafetyLevel.danger;
+
+      state = state.copyWith(
+        isSearching: false,
+        activeRoute: RouteInfo(
+          id: data['id']?.toString() ?? 'route-1',
+          origin: state.origin,
+          destination: state.destination,
+          dangerScore: dangerScore,
+          safetyLevel: safetyLevel,
+          estimatedTime: '${(dangerScore * 0.2 + 8).toInt()} min walk',
+          via: 'Analyzed route',
+          lightingCoverage: 1.0 - (dangerScore / 100.0),
+          recentIncidents: (data['hazard_count'] as num?)?.toInt() ?? 0,
+        ),
+      );
+    } on ApiException catch (e) {
+      state = state.copyWith(isSearching: false, error: e.message);
+    } catch (_) {
+      state = state.copyWith(isSearching: false, error: 'Network error');
+    }
   }
 
   void startNavigation() {
@@ -83,8 +116,24 @@ class MapNotifier extends StateNotifier<MapState> {
     state = state.copyWith(isNavigating: false);
   }
 
-  void dropHazardPin() {
-    // TODO: Connect to Django API — submit hazard report with PostGIS coordinates
+  Future<void> dropHazardPin({
+    double latitude = 19.0760,
+    double longitude = 72.8777,
+    String hazardType = 'suspicious_activity',
+    String description = '',
+  }) async {
+    try {
+      await ApiService.dropHazardPin(
+        latitude: latitude,
+        longitude: longitude,
+        hazardType: hazardType,
+        description: description,
+      );
+    } on ApiException catch (e) {
+      state = state.copyWith(error: e.message);
+    } catch (_) {
+      state = state.copyWith(error: 'Failed to report hazard');
+    }
   }
 }
 

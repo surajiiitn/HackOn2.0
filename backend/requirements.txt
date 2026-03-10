@@ -12,8 +12,7 @@ djangorestframework-simplejwt>=5.3,<6.0
 # Database
 psycopg2-binary>=2.9,<3.0
 
-# Geo / PostGIS
-django-contrib-gis
+# Geo / PostGIS (django.contrib.gis is built-in, no pip package needed)
 djangorestframework-gis>=1.1,<2.0
 
 # Async tasks

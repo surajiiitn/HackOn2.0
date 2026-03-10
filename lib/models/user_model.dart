@@ -39,9 +39,9 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id: json['id'] as String?,
-      phoneNumber: json['phone_number'] as String,
-      name: json['name'] as String?,
+      id: json['id']?.toString(),
+      phoneNumber: (json['phone_number'] ?? json['username'] ?? '') as String,
+      name: (json['first_name'] ?? json['name']) as String?,
       isVerified: json['is_verified'] as bool? ?? false,
       locationPermission: json['location_permission'] as bool? ?? false,
       microphonePermission: json['microphone_permission'] as bool? ?? false,

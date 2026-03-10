@@ -22,6 +22,9 @@ else:
     exit(1)
 "
 
+echo "🔄 Creating migrations..."
+python manage.py makemigrations accounts hazards emergency privacy routing --noinput
+
 echo "🔄 Running migrations..."
 python manage.py migrate --noinput
 

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
+import '../core/services/api_service.dart';
 
 enum AuthStep { phoneInput, otpVerification, permissions, complete }
 
@@ -44,7 +45,24 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState());
+  AuthNotifier() : super(const AuthState()) {
+    _tryAutoLogin();
+  }
+
+  Future<void> _tryAutoLogin() async {
+    await ApiService.loadTokens();
+    if (ApiService.isAuthenticated) {
+      try {
+        final data = await ApiService.getProfile();
+        state = state.copyWith(
+          user: UserModel.fromJson(data),
+          step: AuthStep.complete,
+        );
+      } catch (_) {
+        await ApiService.clearTokens();
+      }
+    }
+  }
 
   void setPhoneNumber(String phone) {
     state = state.copyWith(phoneNumber: phone);
@@ -58,52 +76,74 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> sendOtp() async {
     state = state.copyWith(isLoading: true, error: null);
-    // TODO: Connect to Django API
-    await Future.delayed(const Duration(seconds: 1));
-    state = state.copyWith(
-      isLoading: false,
-      step: AuthStep.otpVerification,
-      otpResendCountdown: 45,
-    );
+    try {
+      final phone = '+91${state.phoneNumber}';
+      await ApiService.requestOtp(phone);
+      state = state.copyWith(
+        isLoading: false,
+        step: AuthStep.otpVerification,
+        otpResendCountdown: 45,
+      );
+    } on ApiException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+    } catch (e) {
+      state = state.copyWith(
+          isLoading: false, error: 'Network error. Please try again.');
+    }
   }
 
   Future<void> verifyOtp() async {
     state = state.copyWith(isLoading: true, error: null);
-    // TODO: Connect to Django API
-    await Future.delayed(const Duration(seconds: 1));
-    state = state.copyWith(
-      isLoading: false,
-      step: AuthStep.permissions,
-    );
+    try {
+      final phone = '+91${state.phoneNumber}';
+      final data = await ApiService.verifyOtp(phone, state.otp);
+      final userData = data['user'] as Map<String, dynamic>?;
+      state = state.copyWith(
+        isLoading: false,
+        step: AuthStep.permissions,
+        user: userData != null ? UserModel.fromJson(userData) : null,
+      );
+    } on ApiException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+    } catch (e) {
+      state = state.copyWith(
+          isLoading: false, error: 'Network error. Please try again.');
+    }
   }
 
   void togglePermission(String permission, bool value) {
-    final user = state.user ??
-        UserModel(phoneNumber: state.phoneNumber);
+    final user = state.user ?? UserModel(phoneNumber: state.phoneNumber);
     switch (permission) {
       case 'location':
-        state = state.copyWith(
-            user: user.copyWith(locationPermission: value));
+        state =
+            state.copyWith(user: user.copyWith(locationPermission: value));
         break;
       case 'microphone':
-        state = state.copyWith(
-            user: user.copyWith(microphonePermission: value));
+        state =
+            state.copyWith(user: user.copyWith(microphonePermission: value));
         break;
       case 'sms':
-        state = state.copyWith(
-            user: user.copyWith(smsPermission: value));
+        state = state.copyWith(user: user.copyWith(smsPermission: value));
         break;
     }
   }
 
   Future<void> completeSetup() async {
     state = state.copyWith(isLoading: true);
-    // TODO: Connect to Django API
-    await Future.delayed(const Duration(milliseconds: 500));
-    state = state.copyWith(
-      isLoading: false,
-      step: AuthStep.complete,
-    );
+    try {
+      await ApiService.updateProfile({
+        'preferred_language': 'en',
+      });
+      state = state.copyWith(isLoading: false, step: AuthStep.complete);
+    } catch (_) {
+      // Proceed even if profile update fails
+      state = state.copyWith(isLoading: false, step: AuthStep.complete);
+    }
+  }
+
+  Future<void> logout() async {
+    await ApiService.clearTokens();
+    state = const AuthState();
   }
 }
 
