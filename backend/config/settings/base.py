@@ -166,6 +166,12 @@ CORS_ALLOWED_ORIGINS = env.list(
 )
 CORS_ALLOW_CREDENTIALS = True
 
+# Development ergonomics:
+# Allow phone/LAN origins without hardcoding every possible IP/port during demos.
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+    CORS_ALLOW_ALL_ORIGINS = True
+
 # ── Celery ──────────────────────────────────────────────────────
 
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://redis:6379/0")
@@ -199,6 +205,12 @@ FAST2SMS_EMERGENCY_CONTACTS = env.list("FAST2SMS_EMERGENCY_CONTACTS", default=[]
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID", default="")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN", default="")
 TWILIO_PHONE_NUMBER = env("TWILIO_PHONE_NUMBER", default="")
+
+# Dev dummy auth (for demo/testing only)
+DUMMY_AUTH_ENABLED = env.bool("DUMMY_AUTH_ENABLED", default=DEBUG)
+DUMMY_AUTH_PHONE = env("DUMMY_AUTH_PHONE", default="7877139375")
+DUMMY_AUTH_OTP = env("DUMMY_AUTH_OTP", default="111111")
+DUMMY_AUTH_ANY_PHONE = env.bool("DUMMY_AUTH_ANY_PHONE", default=DEBUG)
 
 # ── Map Provider ────────────────────────────────────────────────
 

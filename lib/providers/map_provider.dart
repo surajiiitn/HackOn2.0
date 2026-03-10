@@ -760,22 +760,66 @@ class MapNotifier extends StateNotifier<MapState> {
   }
 
   Future<void> dropHazardPin({
-    double latitude = 19.0760,
-    double longitude = 72.8777,
+    double latitude = 21.1065,
+    double longitude = 79.0590,
     String hazardType = 'suspicious_activity',
     String description = '',
   }) async {
     try {
-      await ApiService.dropHazardPin(
+      final response = await ApiService.dropHazardPin(
         latitude: latitude,
         longitude: longitude,
         hazardType: hazardType,
         description: description,
       );
+
+      final responseLat = _parseDouble(response['lat']) ?? latitude;
+      final responseLng = _parseDouble(response['lng']) ?? longitude;
+      final responseType = (response['hazard_type'] as String?) ?? hazardType;
+      final responseDescription =
+          (response['description'] as String?) ?? description;
+      final hazardDescription = responseDescription.trim().isNotEmpty
+          ? responseDescription.trim()
+          : 'User reported hazard';
+
+      final reportedHazard = SafeRouteHazard(
+        id: DateTime.now().millisecondsSinceEpoch,
+        lat: responseLat,
+        lng: responseLng,
+        severity: _severityFromHazardType(responseType),
+        description: hazardDescription,
+      );
+
+      state = state.copyWith(
+        nearbyHazards: [...state.nearbyHazards, reportedHazard],
+        error: null,
+      );
     } on ApiException catch (e) {
       state = state.copyWith(error: e.message);
     } catch (_) {
       state = state.copyWith(error: 'Failed to report hazard');
+    }
+  }
+
+  double? _parseDouble(Object? value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    return double.tryParse(value.toString());
+  }
+
+  String _severityFromHazardType(String hazardType) {
+    switch (hazardType.toLowerCase()) {
+      case 'harassment':
+      case 'unsafe_road':
+        return 'HIGH';
+      case 'suspicious_activity':
+      case 'construction':
+      case 'flooding':
+        return 'MEDIUM';
+      case 'broken_streetlight':
+        return 'LOW';
+      default:
+        return 'MEDIUM';
     }
   }
 }
