@@ -130,9 +130,14 @@ class PrivacyNotifier extends StateNotifier<PrivacyState> {
   }
 
   Future<void> requestTakedown(String url) async {
+    state = state.copyWith(error: null);
     try {
       await ApiService.generateNotice(url);
-    } catch (_) {}
+    } on ApiException catch (e) {
+      state = state.copyWith(error: e.message);
+    } catch (_) {
+      state = state.copyWith(error: 'Failed to generate legal notice');
+    }
   }
 }
 

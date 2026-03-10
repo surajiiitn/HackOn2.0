@@ -29,8 +29,7 @@ class AudioListenerState {
       sensitivity: sensitivity ?? this.sensitivity,
       triggerWords: triggerWords ?? this.triggerWords,
       detectedWord: detectedWord,
-      isProcessingLocally:
-          isProcessingLocally ?? this.isProcessingLocally,
+      isProcessingLocally: isProcessingLocally ?? this.isProcessingLocally,
     );
   }
 }
@@ -39,10 +38,14 @@ class AudioListenerNotifier extends StateNotifier<AudioListenerState> {
   AudioListenerNotifier()
       : super(AudioListenerState(
           triggerWords: const [
-            TriggerWord(id: '1', word: 'Help', language: 'English', isActive: true),
-            TriggerWord(id: '2', word: 'Bachao', language: 'Hindi', isActive: true),
-            TriggerWord(id: '3', word: 'Kaapaatru', language: 'Tamil', isActive: true),
-            TriggerWord(id: '4', word: 'Banchao', language: 'Bengali', isActive: true),
+            TriggerWord(
+                id: '1', word: 'Help', language: 'English', isActive: true),
+            TriggerWord(
+                id: '2', word: 'Bachao', language: 'Hindi', isActive: true),
+            TriggerWord(
+                id: '3', word: 'Kaapaatru', language: 'Tamil', isActive: true),
+            TriggerWord(
+                id: '4', word: 'Banchao', language: 'Bengali', isActive: true),
           ],
         ));
 
@@ -68,7 +71,7 @@ class AudioListenerNotifier extends StateNotifier<AudioListenerState> {
       await ApiService.triggerSos(
         latitude: 19.0760,
         longitude: 72.8777,
-        triggerType: 'audio_keyword',
+        triggerType: 'scream_detection',
       );
     } catch (_) {
       // Keep detection state even if API call fails (offline-first)

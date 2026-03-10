@@ -1,5 +1,6 @@
 import logging
 from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D
 from rest_framework import status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes
@@ -35,7 +36,7 @@ class HazardListView(generics.ListAPIView):
         if lat and lng:
             point = Point(float(lng), float(lat), srid=4326)
             qs = qs.filter(location__distance_lte=(point, D(m=int(radius))))
-            qs = qs.distance(point).order_by("distance")
+            qs = qs.annotate(distance=Distance("location", point)).order_by("distance")
 
         hazard_type = self.request.query_params.get("type")
         if hazard_type:

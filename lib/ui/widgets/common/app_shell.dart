@@ -13,7 +13,8 @@ class AppShell extends StatelessWidget {
     if (location.startsWith(AppConstants.dashboardPath)) return 0;
     if (location.startsWith(AppConstants.safeMapPath)) return 1;
     if (location.startsWith(AppConstants.audioListenerPath)) return 2;
-    if (location.startsWith(AppConstants.settingsPath)) return 3;
+    if (location.startsWith(AppConstants.privacyHubPath)) return 3;
+    if (location.startsWith(AppConstants.settingsPath)) return 4;
     return 0;
   }
 
@@ -37,18 +38,27 @@ class AppShell extends StatelessWidget {
             switch (i) {
               case 0:
                 context.go(AppConstants.dashboardPath);
+                return;
               case 1:
                 context.go(AppConstants.safeMapPath);
+                return;
               case 2:
                 context.go(AppConstants.audioListenerPath);
+                return;
               case 3:
+                context.go(AppConstants.privacyHubPath);
+                return;
+              case 4:
                 context.go(AppConstants.settingsPath);
+                return;
             }
           },
           destinations: const [
             NavigationDestination(
-              icon: Icon(Icons.grid_view_outlined, color: AppColors.textDisabled),
-              selectedIcon: Icon(Icons.grid_view, color: AppColors.electricBlue),
+              icon:
+                  Icon(Icons.grid_view_outlined, color: AppColors.textDisabled),
+              selectedIcon:
+                  Icon(Icons.grid_view, color: AppColors.electricBlue),
               label: 'Dashboard',
             ),
             NavigationDestination(
@@ -62,7 +72,13 @@ class AppShell extends StatelessWidget {
               label: 'Listen',
             ),
             NavigationDestination(
-              icon: Icon(Icons.settings_outlined, color: AppColors.textDisabled),
+              icon: Icon(Icons.shield_outlined, color: AppColors.textDisabled),
+              selectedIcon: Icon(Icons.security, color: AppColors.electricBlue),
+              label: 'Privacy',
+            ),
+            NavigationDestination(
+              icon:
+                  Icon(Icons.settings_outlined, color: AppColors.textDisabled),
               selectedIcon: Icon(Icons.settings, color: AppColors.electricBlue),
               label: 'Settings',
             ),

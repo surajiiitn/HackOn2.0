@@ -3,10 +3,28 @@ from .models import EmergencyEvent, EmergencyLog
 
 
 class SOSTriggerSerializer(serializers.Serializer):
-    trigger_type = serializers.ChoiceField(choices=EmergencyEvent.TriggerType.choices)
+    # Accept aliases from older/mobile clients and normalize to enum values.
+    trigger_type = serializers.CharField()
     latitude = serializers.FloatField(min_value=-90, max_value=90)
     longitude = serializers.FloatField(min_value=-180, max_value=180)
     notes = serializers.CharField(required=False, allow_blank=True, default="")
+
+    _TRIGGER_ALIASES = {
+        "manual": EmergencyEvent.TriggerType.MANUAL_SOS,
+        "audio_keyword": EmergencyEvent.TriggerType.SCREAM_DETECTION,
+        "audio": EmergencyEvent.TriggerType.SCREAM_DETECTION,
+    }
+
+    def validate_trigger_type(self, value):
+        normalized = value.strip().lower()
+        normalized = self._TRIGGER_ALIASES.get(normalized, normalized)
+        allowed = {choice for choice, _ in EmergencyEvent.TriggerType.choices}
+        if normalized not in allowed:
+            raise serializers.ValidationError(
+                "Invalid trigger_type. Use one of: "
+                + ", ".join(sorted(allowed))
+            )
+        return normalized
 
 
 class EmergencyEventSerializer(serializers.ModelSerializer):

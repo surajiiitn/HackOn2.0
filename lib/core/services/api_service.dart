@@ -1,11 +1,28 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8000/api/v1';
+  static const String _baseUrlFromEnv =
+      String.fromEnvironment('API_BASE_URL', defaultValue: '');
   static String? _accessToken;
   static String? _refreshToken;
+
+  static String get baseUrl {
+    if (_baseUrlFromEnv.isNotEmpty) return _baseUrlFromEnv;
+    if (kIsWeb) return 'http://localhost:8000/api/v1';
+
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        // Android emulator maps host loopback to 10.0.2.2
+        return 'http://10.0.2.2:8000/api/v1';
+      case TargetPlatform.iOS:
+        return 'http://127.0.0.1:8000/api/v1';
+      default:
+        return 'http://localhost:8000/api/v1';
+    }
+  }
 
   static Future<void> loadTokens() async {
     final prefs = await SharedPreferences.getInstance();
@@ -36,29 +53,62 @@ class ApiService {
         if (_accessToken != null) 'Authorization': 'Bearer $_accessToken',
       };
 
+  static Future<http.Response> _requestWithAutoRefresh(
+      Future<http.Response> Function() request) async {
+    var response = await request();
+    if (response.statusCode != 401 || _refreshToken == null) {
+      return response;
+    }
+
+    final refreshed = await _tryRefreshToken();
+    if (!refreshed) {
+      await clearTokens();
+      return response;
+    }
+
+    response = await request();
+    if (response.statusCode == 401) {
+      await clearTokens();
+    }
+    return response;
+  }
+
   static Future<Map<String, dynamic>> _handleResponse(
       http.Response response) async {
-    if (response.statusCode == 401 && _refreshToken != null) {
-      final refreshed = await _tryRefreshToken();
-      if (refreshed) {
-        // Caller should retry the request
-        throw TokenRefreshedException();
-      }
+    if (response.statusCode == 401) {
       await clearTokens();
       throw ApiException('Session expired. Please login again.', 401);
     }
 
-    final body = response.body.isEmpty
-        ? <String, dynamic>{}
-        : jsonDecode(response.body) as Map<String, dynamic>;
+    dynamic decoded;
+    if (response.body.isNotEmpty) {
+      try {
+        decoded = jsonDecode(response.body);
+      } catch (_) {
+        decoded = <String, dynamic>{};
+      }
+    }
+    final body = decoded is Map<String, dynamic>
+        ? decoded
+        : <String, dynamic>{'data': decoded};
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return body;
     }
 
-    final message =
-        body['detail'] ?? body['message'] ?? body['error'] ?? 'Request failed';
-    throw ApiException(message.toString(), response.statusCode);
+    throw ApiException(_extractErrorMessage(body), response.statusCode);
+  }
+
+  static String _extractErrorMessage(Map<String, dynamic> body) {
+    final direct = body['detail'] ?? body['message'] ?? body['error'];
+    if (direct != null) return direct.toString();
+
+    if (body.isEmpty) return 'Request failed';
+    final firstValue = body.values.first;
+    if (firstValue is List && firstValue.isNotEmpty) {
+      return firstValue.first.toString();
+    }
+    return firstValue.toString();
   }
 
   static Future<bool> _tryRefreshToken() async {
@@ -111,19 +161,23 @@ class ApiService {
   // ── User Profile ────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> getProfile() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/users/profile/'),
-      headers: _headers,
+    final response = await _requestWithAutoRefresh(
+      () => http.get(
+        Uri.parse('$baseUrl/users/profile/'),
+        headers: _headers,
+      ),
     );
     return _handleResponse(response);
   }
 
   static Future<Map<String, dynamic>> updateProfile(
       Map<String, dynamic> data) async {
-    final response = await http.patch(
-      Uri.parse('$baseUrl/users/profile/'),
-      headers: _headers,
-      body: jsonEncode(data),
+    final response = await _requestWithAutoRefresh(
+      () => http.patch(
+        Uri.parse('$baseUrl/users/profile/'),
+        headers: _headers,
+        body: jsonEncode(data),
+      ),
     );
     return _handleResponse(response);
   }
@@ -131,9 +185,11 @@ class ApiService {
   // ── Emergency Contacts ──────────────────────────────────────
 
   static Future<Map<String, dynamic>> listContacts() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/users/contacts/'),
-      headers: _headers,
+    final response = await _requestWithAutoRefresh(
+      () => http.get(
+        Uri.parse('$baseUrl/users/contacts/'),
+        headers: _headers,
+      ),
     );
     final data = await _handleResponse(response);
     return data;
@@ -141,18 +197,22 @@ class ApiService {
 
   static Future<Map<String, dynamic>> addContact(
       Map<String, dynamic> contact) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/users/contacts/'),
-      headers: _headers,
-      body: jsonEncode(contact),
+    final response = await _requestWithAutoRefresh(
+      () => http.post(
+        Uri.parse('$baseUrl/users/contacts/'),
+        headers: _headers,
+        body: jsonEncode(contact),
+      ),
     );
     return _handleResponse(response);
   }
 
   static Future<void> deleteContact(String id) async {
-    final response = await http.delete(
-      Uri.parse('$baseUrl/users/contacts/$id/'),
-      headers: _headers,
+    final response = await _requestWithAutoRefresh(
+      () => http.delete(
+        Uri.parse('$baseUrl/users/contacts/$id/'),
+        headers: _headers,
+      ),
     );
     if (response.statusCode != 204) {
       await _handleResponse(response);
@@ -164,24 +224,28 @@ class ApiService {
   static Future<Map<String, dynamic>> triggerSos({
     required double latitude,
     required double longitude,
-    String triggerType = 'manual',
+    String triggerType = 'manual_sos',
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/sos/trigger/'),
-      headers: _headers,
-      body: jsonEncode({
-        'latitude': latitude,
-        'longitude': longitude,
-        'trigger_type': triggerType,
-      }),
+    final response = await _requestWithAutoRefresh(
+      () => http.post(
+        Uri.parse('$baseUrl/sos/trigger/'),
+        headers: _headers,
+        body: jsonEncode({
+          'latitude': latitude,
+          'longitude': longitude,
+          'trigger_type': triggerType,
+        }),
+      ),
     );
     return _handleResponse(response);
   }
 
   static Future<Map<String, dynamic>> cancelSos(String eventId) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/sos/$eventId/cancel/'),
-      headers: _headers,
+    final response = await _requestWithAutoRefresh(
+      () => http.post(
+        Uri.parse('$baseUrl/sos/$eventId/cancel/'),
+        headers: _headers,
+      ),
     );
     return _handleResponse(response);
   }
@@ -194,15 +258,17 @@ class ApiService {
     required String hazardType,
     String description = '',
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/hazards/drop-pin/'),
-      headers: _headers,
-      body: jsonEncode({
-        'latitude': latitude,
-        'longitude': longitude,
-        'hazard_type': hazardType,
-        'description': description,
-      }),
+    final response = await _requestWithAutoRefresh(
+      () => http.post(
+        Uri.parse('$baseUrl/hazards/drop-pin/'),
+        headers: _headers,
+        body: jsonEncode({
+          'latitude': latitude,
+          'longitude': longitude,
+          'hazard_type': hazardType,
+          'description': description,
+        }),
+      ),
     );
     return _handleResponse(response);
   }
@@ -218,7 +284,8 @@ class ApiService {
     if (radius != null) params['radius'] = radius.toString();
     final uri =
         Uri.parse('$baseUrl/hazards/list/').replace(queryParameters: params);
-    final response = await http.get(uri, headers: _headers);
+    final response =
+        await _requestWithAutoRefresh(() => http.get(uri, headers: _headers));
     return _handleResponse(response);
   }
 
@@ -230,15 +297,17 @@ class ApiService {
     required double endLat,
     required double endLng,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/routes/safe-path/'),
-      headers: _headers,
-      body: jsonEncode({
-        'start_lat': startLat,
-        'start_lng': startLng,
-        'end_lat': endLat,
-        'end_lng': endLng,
-      }),
+    final response = await _requestWithAutoRefresh(
+      () => http.post(
+        Uri.parse('$baseUrl/routes/safe-path/'),
+        headers: _headers,
+        body: jsonEncode({
+          'start_lat': startLat,
+          'start_lng': startLng,
+          'end_lat': endLat,
+          'end_lng': endLng,
+        }),
+      ),
     );
     return _handleResponse(response);
   }
@@ -246,9 +315,11 @@ class ApiService {
   // ── Privacy / OSINT ─────────────────────────────────────────
 
   static Future<Map<String, dynamic>> startPrivacyScan() async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/privacy/scan/start/'),
-      headers: _headers,
+    final response = await _requestWithAutoRefresh(
+      () => http.post(
+        Uri.parse('$baseUrl/privacy/scan/start/'),
+        headers: _headers,
+      ),
     );
     return _handleResponse(response);
   }
@@ -258,15 +329,18 @@ class ApiService {
     if (scanId != null) params['scan_id'] = scanId;
     final uri = Uri.parse('$baseUrl/privacy/scan/status/')
         .replace(queryParameters: params.isEmpty ? null : params);
-    final response = await http.get(uri, headers: _headers);
+    final response =
+        await _requestWithAutoRefresh(() => http.get(uri, headers: _headers));
     return _handleResponse(response);
   }
 
   static Future<Map<String, dynamic>> generateNotice(String url) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/privacy/generate-notice/'),
-      headers: _headers,
-      body: jsonEncode({'url': url}),
+    final response = await _requestWithAutoRefresh(
+      () => http.post(
+        Uri.parse('$baseUrl/privacy/generate-notice/'),
+        headers: _headers,
+        body: jsonEncode({'flagged_url': url}),
+      ),
     );
     return _handleResponse(response);
   }
@@ -280,5 +354,3 @@ class ApiException implements Exception {
   @override
   String toString() => message;
 }
-
-class TokenRefreshedException implements Exception {}

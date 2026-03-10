@@ -51,13 +51,13 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       final data = await ApiService.triggerSos(
         latitude: 19.0760,
         longitude: 72.8777,
-        triggerType: 'manual',
+        triggerType: 'manual_sos',
       );
       state = state.copyWith(
         activeEventId: data['id'] as String?,
       );
     } on ApiException catch (e) {
-      state = state.copyWith(error: e.message);
+      state = state.copyWith(isSosActive: false, error: e.message);
     } catch (_) {
       // Keep SOS active locally even if API fails (offline-first)
     }

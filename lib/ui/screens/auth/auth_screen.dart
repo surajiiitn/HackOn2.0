@@ -14,6 +14,16 @@ class AuthScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
     final notifier = ref.read(authProvider.notifier);
+    final showOtp = auth.step.index >= AuthStep.otpVerification.index;
+    final showPermissions = auth.step.index >= AuthStep.permissions.index;
+
+    if (auth.step == AuthStep.complete) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) {
+          context.go(AppConstants.dashboardPath);
+        }
+      });
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -25,13 +35,25 @@ class AuthScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
                 _buildHeader(context),
                 const SizedBox(height: 48),
+                if (auth.error != null) ...[
+                  _buildErrorBanner(context, auth.error!),
+                  const SizedBox(height: 16),
+                ],
                 _buildPhoneInput(context, auth, notifier),
-                const SizedBox(height: 24),
-                _buildOtpSection(context, auth, notifier),
-                const SizedBox(height: 32),
-                _buildPermissionsSection(context, auth, notifier),
-                const SizedBox(height: 32),
-                _buildCompleteButton(context, auth, notifier),
+                if (showOtp) ...[
+                  const SizedBox(height: 24),
+                  _buildOtpSection(context, auth, notifier),
+                  if (auth.step == AuthStep.otpVerification) ...[
+                    const SizedBox(height: 16),
+                    _buildVerifyOtpButton(context, auth, notifier),
+                  ],
+                ],
+                if (showPermissions) ...[
+                  const SizedBox(height: 32),
+                  _buildPermissionsSection(context, auth, notifier),
+                  const SizedBox(height: 32),
+                  _buildCompleteButton(context, auth, notifier),
+                ],
                 const SizedBox(height: 24),
                 Text(
                   AppConstants.encryptionNote.toUpperCase(),
@@ -46,6 +68,25 @@ class AuthScreen extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorBanner(BuildContext context, String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.crimsonDim,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.crimson.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        message,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }
@@ -139,9 +180,7 @@ class AuthScreen extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(auth.isLoading
-                    ? 'Sending...'
-                    : 'Send Verification Code'),
+                Text(auth.isLoading ? 'Sending...' : 'Send Verification Code'),
                 const SizedBox(width: 8),
                 const Icon(Icons.arrow_forward, size: 18),
               ],
@@ -149,6 +188,19 @@ class AuthScreen extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildVerifyOtpButton(
+      BuildContext context, AuthState auth, AuthNotifier notifier) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: auth.isLoading || auth.otp.length != AppConstants.otpLength
+            ? null
+            : () => notifier.verifyOtp(),
+        child: Text(auth.isLoading ? 'Verifying...' : 'Verify Code'),
+      ),
     );
   }
 
@@ -211,8 +263,7 @@ class AuthScreen extends ConsumerWidget {
 
   Widget _buildPermissionsSection(
       BuildContext context, AuthState auth, AuthNotifier notifier) {
-    final user = auth.user ??
-        const UserModel(phoneNumber: '');
+    final user = auth.user ?? const UserModel(phoneNumber: '');
 
     return Container(
       padding: const EdgeInsets.all(20),

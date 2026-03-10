@@ -106,6 +106,29 @@ class SafeMapScreen extends ConsumerWidget {
               hint: 'Where to?',
               onChanged: notifier.setDestination,
             ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed:
+                    state.isSearching ? null : () => notifier.searchRoute(),
+                icon: state.isSearching
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.shield, size: 16),
+                label: Text(
+                  state.isSearching
+                      ? 'Analyzing route...'
+                      : 'Find Safest Route',
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -135,7 +158,8 @@ class SafeMapScreen extends ConsumerWidget {
             child: TextField(
               controller: TextEditingController(text: value),
               onChanged: onChanged,
-              style: const TextStyle(color: AppColors.textPrimary, fontSize: 14),
+              style:
+                  const TextStyle(color: AppColors.textPrimary, fontSize: 14),
               decoration: InputDecoration(
                 hintText: hint,
                 border: InputBorder.none,
@@ -161,7 +185,7 @@ class SafeMapScreen extends ConsumerWidget {
         children: [
           _floatingButton(Icons.layers, () {}),
           const SizedBox(height: 12),
-          _floatingButton(Icons.navigation, () {}),
+          _floatingButton(Icons.navigation, () => notifier.searchRoute()),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(

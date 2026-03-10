@@ -49,6 +49,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _tryAutoLogin();
   }
 
+  String _normalizePhoneNumber(String input) {
+    final digits = input.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length == 10) return '+91$digits';
+    if (digits.length == 12 && digits.startsWith('91')) return '+$digits';
+    if (input.startsWith('+')) return input;
+    return '+$digits';
+  }
+
   Future<void> _tryAutoLogin() async {
     await ApiService.loadTokens();
     if (ApiService.isAuthenticated) {
@@ -75,9 +83,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> sendOtp() async {
+    if (state.phoneNumber.trim().isEmpty) {
+      state = state.copyWith(error: 'Please enter your phone number');
+      return;
+    }
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final phone = '+91${state.phoneNumber}';
+      final phone = _normalizePhoneNumber(state.phoneNumber);
       await ApiService.requestOtp(phone);
       state = state.copyWith(
         isLoading: false,
@@ -93,9 +105,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> verifyOtp() async {
+    if (state.otp.length < 6) {
+      state = state.copyWith(error: 'Please enter the 6-digit OTP');
+      return;
+    }
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final phone = '+91${state.phoneNumber}';
+      final phone = _normalizePhoneNumber(state.phoneNumber);
       final data = await ApiService.verifyOtp(phone, state.otp);
       final userData = data['user'] as Map<String, dynamic>?;
       state = state.copyWith(
@@ -115,8 +131,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final user = state.user ?? UserModel(phoneNumber: state.phoneNumber);
     switch (permission) {
       case 'location':
-        state =
-            state.copyWith(user: user.copyWith(locationPermission: value));
+        state = state.copyWith(user: user.copyWith(locationPermission: value));
         break;
       case 'microphone':
         state =

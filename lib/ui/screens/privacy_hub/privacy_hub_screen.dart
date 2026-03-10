@@ -18,7 +18,8 @@ class PrivacyHubScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Row(
           children: [
-            const Icon(Icons.shield_outlined, color: AppColors.electricBlue, size: 28),
+            const Icon(Icons.shield_outlined,
+                color: AppColors.electricBlue, size: 28),
             const SizedBox(width: 8),
             RichText(
               text: TextSpan(
@@ -35,8 +36,10 @@ class PrivacyHubScreen extends ConsumerWidget {
           ],
         ),
         actions: [
-          IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () {}),
+          IconButton(
+              icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
+          IconButton(
+              icon: const Icon(Icons.settings_outlined), onPressed: () {}),
         ],
       ),
       body: SingleChildScrollView(
@@ -45,11 +48,34 @@ class PrivacyHubScreen extends ConsumerWidget {
           children: [
             _buildStatsRow(context, state),
             _buildScanButton(context, state, notifier),
+            if (state.error != null) _buildErrorBanner(context, state.error!),
             _buildBreachesSection(context, state, notifier),
-            _buildTakedownSection(context),
+            _buildTakedownSection(context, state, notifier),
             _buildBiometricVault(context),
             const SizedBox(height: 100),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorBanner(BuildContext context, String message) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: AppColors.crimsonDim,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.crimson.withValues(alpha: 0.45)),
+        ),
+        child: Text(
+          message,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
         ),
       ),
     );
@@ -178,7 +204,8 @@ class PrivacyHubScreen extends ConsumerWidget {
         children: [
           SectionHeader(
             title: 'Flagged Breaches',
-            leading: const Icon(Icons.warning, color: AppColors.accentOrange, size: 20),
+            leading: const Icon(Icons.warning,
+                color: AppColors.accentOrange, size: 20),
             actionLabel: 'ACTION REQUIRED',
           ),
           const SizedBox(height: 12),
@@ -262,7 +289,8 @@ class PrivacyHubScreen extends ConsumerWidget {
                     return Padding(
                       padding: const EdgeInsets.only(right: 16),
                       child: GestureDetector(
-                        onTap: () {},
+                        onTap: () => _handleBreachAction(
+                            context, action, breach, notifier),
                         child: Text(
                           action,
                           style: TextStyle(
@@ -285,7 +313,46 @@ class PrivacyHubScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTakedownSection(BuildContext context) {
+  String _resolveFlaggedUrl(BreachInfo breach) {
+    switch (breach.id) {
+      case '1':
+        return 'https://example.com/databreach/leaked-emails';
+      case '2':
+        return 'https://reddit.com/r/deepfakes/example';
+      case '3':
+        return 'https://databrokerx.com/profile/123';
+      default:
+        return 'https://example.com/privacy/${breach.id}';
+    }
+  }
+
+  Future<void> _handleBreachAction(
+    BuildContext context,
+    String action,
+    BreachInfo breach,
+    PrivacyNotifier notifier,
+  ) async {
+    if (action.contains('Takedown')) {
+      await notifier.requestTakedown(_resolveFlaggedUrl(breach));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Takedown notice generated')),
+        );
+      }
+      return;
+    }
+
+    if (action == 'Ignore') {
+      notifier.dismissBreach(breach.id);
+      return;
+    }
+  }
+
+  Widget _buildTakedownSection(
+      BuildContext context, PrivacyState state, PrivacyNotifier notifier) {
+    final defaultUrl = state.breaches.isNotEmpty
+        ? _resolveFlaggedUrl(state.breaches.first)
+        : 'https://example.com/privacy-exposure';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -293,7 +360,8 @@ class PrivacyHubScreen extends ConsumerWidget {
         children: [
           SectionHeader(
             title: 'Takedown Actions',
-            leading: const Icon(Icons.gavel, color: AppColors.electricBlue, size: 20),
+            leading: const Icon(Icons.gavel,
+                color: AppColors.electricBlue, size: 20),
           ),
           const SizedBox(height: 12),
           Container(
@@ -354,7 +422,16 @@ class PrivacyHubScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: () async {
+                          await notifier.requestTakedown(defaultUrl);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Notice exported and queued'),
+                              ),
+                            );
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: AppColors.backgroundDark,
@@ -370,7 +447,16 @@ class PrivacyHubScreen extends ConsumerWidget {
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        await notifier.requestTakedown(defaultUrl);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Draft notice created'),
+                            ),
+                          );
+                        }
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.slate700,
                         padding: const EdgeInsets.symmetric(
