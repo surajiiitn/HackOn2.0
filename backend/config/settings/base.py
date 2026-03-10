@@ -191,6 +191,11 @@ SMS_PROVIDER = env("SMS_PROVIDER", default="console")
 SMS_API_KEY = env("SMS_API_KEY", default="")
 SMS_SENDER_ID = env("SMS_SENDER_ID", default="SURAKSHA")
 
+# Twilio
+TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID", default="")
+TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN", default="")
+TWILIO_PHONE_NUMBER = env("TWILIO_PHONE_NUMBER", default="")
+
 # ── Map Provider ────────────────────────────────────────────────
 
 MAP_PROVIDER = env("MAP_PROVIDER", default="stub")
